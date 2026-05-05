@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: 'mfe_two',
+      name: 'students',
       filename: 'remoteEntry.js',
       exposes: {
         './Page': './src/Page.tsx',

@@ -75,7 +75,7 @@ export default function Header({
         />
         <strong style={{ fontSize: 16, letterSpacing: 0.2 }}>{appName}</strong>
         <span style={{ opacity: 0.5, fontSize: 12, marginLeft: 8 }}>
-          header rendered by mfe-three
+          header rendered by header MFE
         </span>
       </div>
 

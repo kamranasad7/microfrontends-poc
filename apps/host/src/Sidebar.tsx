@@ -26,16 +26,16 @@ export default function Sidebar() {
         boxSizing: 'border-box',
       }}
     >
-      <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 16 }}>MFE Host</div>
+      <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 16 }}>JuiceMind Quizzes</div>
       <nav>
         <NavLink to="/" end style={({ isActive }) => (isActive ? linkActive : linkBase)}>
           Home
         </NavLink>
-        <NavLink to="/one" style={({ isActive }) => (isActive ? linkActive : linkBase)}>
-          MFE One
+        <NavLink to="/quizzes" style={({ isActive }) => (isActive ? linkActive : linkBase)}>
+          Quizzes
         </NavLink>
-        <NavLink to="/two" style={({ isActive }) => (isActive ? linkActive : linkBase)}>
-          MFE Two
+        <NavLink to="/students" style={({ isActive }) => (isActive ? linkActive : linkBase)}>
+          Students
         </NavLink>
       </nav>
     </aside>

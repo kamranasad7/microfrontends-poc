@@ -10,19 +10,19 @@ export default defineConfig({
     federation({
       name: 'host',
       remotes: {
-        mfe_one: {
+        quizzes: {
           type: 'module',
-          name: 'mfe_one',
+          name: 'quizzes',
           entry: 'http://localhost:3001/mf-manifest.json',
         },
-        mfe_two: {
+        students: {
           type: 'module',
-          name: 'mfe_two',
+          name: 'students',
           entry: 'http://localhost:3002/mf-manifest.json',
         },
-        mfe_three: {
+        header: {
           type: 'module',
-          name: 'mfe_three',
+          name: 'header',
           entry: 'http://localhost:3003/mf-manifest.json',
         },
       },

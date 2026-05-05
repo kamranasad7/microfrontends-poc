@@ -2,16 +2,16 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { federation } from '@module-federation/vite';
 
-const PORT = 3003;
+const PORT = 3001;
 
 export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: 'mfe_three',
+      name: 'quizzes',
       filename: 'remoteEntry.js',
       exposes: {
-        './Header': './src/Header.tsx',
+        './Page': './src/Page.tsx',
       },
       shared: {
         react: { singleton: true, requiredVersion: '^19.0.0' },
