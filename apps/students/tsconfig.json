@@ -1,12 +1,10 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "@modern-js/tsconfig/base",
   "compilerOptions": {
-    "useDefineForClassFields": true,
-    "noEmit": true,
+    "baseUrl": "./",
     "paths": {
-      "*": ["./@mf-types/*"]
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "@mf-types"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src", "modern.config.ts", "module-federation.config.ts"]
 }

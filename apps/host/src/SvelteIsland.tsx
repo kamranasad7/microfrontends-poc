@@ -1,18 +1,26 @@
 import { useEffect, useRef } from 'react';
 
-interface SvelteRendererModule<P> {
-  render: (target: HTMLElement, props: P) => () => void;
+type SvelteLoader = () => Promise<{
+  render: (target: HTMLElement, props: never) => () => void;
+}>;
+
+type LoaderProps<L extends SvelteLoader> =
+  Awaited<ReturnType<L>>['render'] extends (
+    target: HTMLElement,
+    props: infer P,
+  ) => () => void
+    ? P
+    : never;
+
+interface SvelteIslandProps<L extends SvelteLoader> {
+  load: L;
+  props: LoaderProps<L>;
 }
 
-interface SvelteIslandProps<P extends Record<string, unknown>> {
-  load: () => Promise<SvelteRendererModule<P>>;
-  props: P;
-}
-
-export default function SvelteIsland<P extends Record<string, unknown>>({
+export default function SvelteIsland<L extends SvelteLoader>({
   load,
   props,
-}: SvelteIslandProps<P>) {
+}: SvelteIslandProps<L>) {
   const ref = useRef<HTMLDivElement>(null);
   const propsKey = JSON.stringify(props);
 
@@ -24,7 +32,7 @@ export default function SvelteIsland<P extends Record<string, unknown>>({
 
     load().then((mod) => {
       if (cancelled || !target) return;
-      cleanup = mod.render(target, props);
+      cleanup = mod.render(target, props as never);
     });
 
     return () => {

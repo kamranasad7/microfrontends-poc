@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink } from '@modern-js/runtime/router';
 
 const linkBase: React.CSSProperties = {
   display: 'block',
