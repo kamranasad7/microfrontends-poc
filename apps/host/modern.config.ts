@@ -9,7 +9,7 @@ export default defineConfig({
   },
   server: {
     port: PORT,
-    ssr: true,
+    ssr: false,
   },
   dev: {
     assetPrefix: `http://localhost:${PORT}`,
@@ -17,5 +17,8 @@ export default defineConfig({
   output: {
     assetPrefix: `http://localhost:${PORT}`,
   },
-  plugins: [appTools({ bundler: 'rspack' }), moduleFederationPlugin()],
+  plugins: [
+    appTools({ bundler: 'rspack' }),
+    moduleFederationPlugin({ remoteIpStrategy: 'inherit' }),
+  ],
 });
