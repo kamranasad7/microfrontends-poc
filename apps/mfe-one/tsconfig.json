@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "useDefineForClassFields": true,
+    "noEmit": true,
+    "paths": {
+      "*": ["./@mf-types/*"]
+    }
+  },
+  "include": ["src", "@mf-types"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

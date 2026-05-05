@@ -1,0 +1,11 @@
+{
+  "name": "microfrontends-poc",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel run dev",
+    "build": "pnpm -r run build",
+    "preview": "pnpm -r --parallel run preview"
+  },
+  "packageManager": "pnpm@10.26.2"
+}
