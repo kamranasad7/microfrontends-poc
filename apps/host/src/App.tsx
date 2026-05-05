@@ -1,10 +1,14 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import SvelteIsland from './SvelteIsland';
+import type { SettingsProps } from 'settings/Settings';
 
 const QuizzesPage = lazy(() => import('quizzes/Page'));
 const StudentsPage = lazy(() => import('students/Page'));
 const HeaderMfe = lazy(() => import('header/Header'));
+
+const settingsLoader = () => import('settings/Settings');
 
 function RemoteFrame({ children }: { children: ReactNode }) {
   return (
@@ -15,6 +19,14 @@ function RemoteFrame({ children }: { children: ReactNode }) {
     </Suspense>
   );
 }
+
+const settingsProps: SettingsProps = {
+  userName: 'Kamran',
+  userEmail: 'kamran@juicemind.app',
+  onSave: (data) => {
+    alert(`Host received settings save:\n${JSON.stringify(data, null, 2)}`);
+  },
+};
 
 export default function App() {
   return (
@@ -40,7 +52,8 @@ export default function App() {
                   <p style={{ color: '#475569' }}>
                     Pick a microfrontend from the sidebar. The header above is also a federated
                     component (header MFE) — it stays mounted across navigation so its notification
-                    state survives route changes.
+                    state survives route changes. Settings is a Svelte MFE federated into this React
+                    host via a small adapter.
                   </p>
                 </div>
               }
@@ -59,6 +72,12 @@ export default function App() {
                 <RemoteFrame>
                   <StudentsPage initialCount={5} />
                 </RemoteFrame>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <SvelteIsland loader={settingsLoader} props={settingsProps} />
               }
             />
           </Routes>

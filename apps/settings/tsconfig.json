@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "moduleResolution": "Bundler",
+    "allowJs": true,
+    "checkJs": false,
+    "paths": {
+      "*": ["./@mf-types/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.svelte", "@mf-types"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

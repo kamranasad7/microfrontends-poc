@@ -25,6 +25,11 @@ export default defineConfig({
           name: 'header',
           entry: 'http://localhost:3003/mf-manifest.json',
         },
+        settings: {
+          type: 'module',
+          name: 'settings',
+          entry: 'http://localhost:3004/mf-manifest.json',
+        },
       },
       shared: {
         react: { singleton: true, requiredVersion: '^19.0.0' },

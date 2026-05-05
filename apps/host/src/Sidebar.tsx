@@ -37,6 +37,9 @@ export default function Sidebar() {
         <NavLink to="/students" style={({ isActive }) => (isActive ? linkActive : linkBase)}>
           Students
         </NavLink>
+        <NavLink to="/settings" style={({ isActive }) => (isActive ? linkActive : linkBase)}>
+          Settings
+        </NavLink>
       </nav>
     </aside>
   );
