@@ -11,7 +11,7 @@ export default defineConfig({
       name: 'settings',
       filename: 'remoteEntry.js',
       exposes: {
-        './Settings': './src/render.ts',
+        './App': './src/App.ts',
       },
       shared: {},
       manifest: true,

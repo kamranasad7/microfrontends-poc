@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SettingsProps, SettingsData } from './types';
+  import type { SettingsProps, SettingsData } from './App';
 
   let { userName, userEmail, onSave }: SettingsProps = $props();
 

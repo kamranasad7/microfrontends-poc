@@ -9,3 +9,4 @@ dist
 # MF 2.0 generated types — fetched from remotes at dev/build time
 **/@mf-types/
 **/@mf-types.zip
+**/.mf/

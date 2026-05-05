@@ -2,13 +2,12 @@ import { lazy, Suspense, type ReactNode } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import SvelteIsland from './SvelteIsland';
-import type { SettingsProps } from 'settings/Settings';
 
 const QuizzesPage = lazy(() => import('quizzes/Page'));
 const StudentsPage = lazy(() => import('students/Page'));
 const HeaderMfe = lazy(() => import('header/Header'));
 
-const settingsLoader = () => import('settings/Settings');
+const loadSettings = () => import('settings/App');
 
 function RemoteFrame({ children }: { children: ReactNode }) {
   return (
@@ -19,14 +18,6 @@ function RemoteFrame({ children }: { children: ReactNode }) {
     </Suspense>
   );
 }
-
-const settingsProps: SettingsProps = {
-  userName: 'Kamran',
-  userEmail: 'kamran@juicemind.app',
-  onSave: (data) => {
-    alert(`Host received settings save:\n${JSON.stringify(data, null, 2)}`);
-  },
-};
 
 export default function App() {
   return (
@@ -77,7 +68,16 @@ export default function App() {
             <Route
               path="/settings"
               element={
-                <SvelteIsland loader={settingsLoader} props={settingsProps} />
+                <SvelteIsland
+                  load={loadSettings}
+                  props={{
+                    userName: 'Kamran',
+                    userEmail: 'kamran@juicemind.app',
+                    onSave: (data) => {
+                      alert(`Host received settings save:\n${JSON.stringify(data, null, 2)}`);
+                    },
+                  }}
+                />
               }
             />
           </Routes>
