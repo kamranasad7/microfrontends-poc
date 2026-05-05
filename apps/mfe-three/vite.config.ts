@@ -2,29 +2,16 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { federation } from '@module-federation/vite';
 
-const PORT = 3000;
+const PORT = 3003;
 
 export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: 'host',
-      remotes: {
-        mfe_one: {
-          type: 'module',
-          name: 'mfe_one',
-          entry: 'http://localhost:3001/mf-manifest.json',
-        },
-        mfe_two: {
-          type: 'module',
-          name: 'mfe_two',
-          entry: 'http://localhost:3002/mf-manifest.json',
-        },
-        mfe_three: {
-          type: 'module',
-          name: 'mfe_three',
-          entry: 'http://localhost:3003/mf-manifest.json',
-        },
+      name: 'mfe_three',
+      filename: 'remoteEntry.js',
+      exposes: {
+        './Header': './src/Header.tsx',
       },
       shared: {
         react: { singleton: true, requiredVersion: '^19.0.0' },
