@@ -21,8 +21,8 @@ function RemoteFrame({ children }: { children: ReactNode }) {
 
 export default function App() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
-      <Suspense fallback={<div style={{ height: 56, background: '#0f172a' }} />}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', fontFamily: 'system-ui, sans-serif' }}>
+      <Suspense fallback={<div style={{ height: 56, background: '#0f172a', flexShrink: 0 }} />}>
         <HeaderMfe
           appName="JuiceMind Quizzes"
           user={{ name: 'Kamran', avatarColor: '#7c3aed' }}
@@ -31,9 +31,9 @@ export default function App() {
         />
       </Suspense>
 
-      <div style={{ display: 'flex', flex: 1 }}>
+      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
         <Sidebar />
-        <main style={{ flex: 1, background: '#f8fafc' }}>
+        <main style={{ flex: 1, background: '#f8fafc', overflowY: 'auto' }}>
           <Routes>
             <Route
               path="/"
