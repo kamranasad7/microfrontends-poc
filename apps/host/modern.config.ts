@@ -9,7 +9,7 @@ export default defineConfig({
   },
   server: {
     port: PORT,
-    ssr: false,
+    ssr: true,
   },
   dev: {
     assetPrefix: `http://localhost:${PORT}`,
