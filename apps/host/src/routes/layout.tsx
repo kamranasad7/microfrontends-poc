@@ -1,8 +1,13 @@
-import { lazy, Suspense } from 'react';
 import { Outlet } from '@modern-js/runtime/router';
+import { instance } from '../mf-runtime';
 import Sidebar from '../Sidebar';
 
-const HeaderMfe = lazy(() => import('header/Header'));
+const HeaderMfe = instance!.createLazyComponent({
+  loader: () => import('header/Header'),
+  loading: <div style={{ height: 56, background: '#0f172a', flexShrink: 0 }} />,
+  export: 'default',
+  fallback: () => <div style={{ height: 56, background: '#0f172a', flexShrink: 0 }} />,
+});
 
 export default function Layout() {
   return (
@@ -15,14 +20,12 @@ export default function Layout() {
         fontFamily: 'system-ui, sans-serif',
       }}
     >
-      <Suspense fallback={<div style={{ height: 56, background: '#0f172a', flexShrink: 0 }} />}>
-        <HeaderMfe
-          appName="JuiceMind Quizzes"
-          user={{ name: 'Kamran', avatarColor: '#7c3aed' }}
-          accentColor="#0f172a"
-          onLogout={() => alert('Host received logout from header MFE')}
-        />
-      </Suspense>
+      <HeaderMfe
+        appName="JuiceMind Quizzes"
+        user={{ name: 'Kamran', avatarColor: '#7c3aed' }}
+        accentColor="#0f172a"
+        onLogout={() => alert('Host received logout from header MFE')}
+      />
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
         <Sidebar />
         <main style={{ flex: 1, background: '#f8fafc', overflowY: 'auto' }}>

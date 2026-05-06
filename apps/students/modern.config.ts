@@ -1,14 +1,12 @@
 import { appTools, defineConfig } from '@modern-js/app-tools';
-import { moduleFederationPlugin } from '@module-federation/modern-js';
+import { moduleFederationPlugin } from '@module-federation/modern-js-v3';
 
 const PORT = 3002;
 
 export default defineConfig({
-  runtime: {
-    router: true,
-  },
   server: {
     port: PORT,
+    ssr: { mode: "stream" },
   },
   dev: {
     assetPrefix: `http://localhost:${PORT}`,
@@ -16,5 +14,5 @@ export default defineConfig({
   output: {
     assetPrefix: `http://localhost:${PORT}`,
   },
-  plugins: [appTools({ bundler: 'rspack' }), moduleFederationPlugin()],
+  plugins: [appTools(), moduleFederationPlugin()],
 });
