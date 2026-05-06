@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
-  import { PageKey } from 'vike-svelte/context';
+  import { layoutState } from './layout-state.svelte';
 
-  const pageContext = getContext<{ urlPathname: string }>(PageKey);
   const links = [
     { href: '/', label: 'Home' },
     { href: '/quizzes', label: 'Quizzes' },
@@ -16,7 +14,7 @@
     {#each links as link (link.href)}
       <a
         href={link.href}
-        class:active={pageContext?.urlPathname === link.href}
+        class:active={layoutState.pageContext?.urlPathname === link.href}
       >{link.label}</a>
     {/each}
   </nav>
