@@ -15,10 +15,11 @@ export default defineConfig({
       exposes: {
         './App': './src/App.ts',
       },
-      shared: {
-        svelte: { singleton: true, requiredVersion: '^5.0.0' },
-        'svelte/': { singleton: true },
-      },
+      // No svelte sharing across federation: host uses the render-function
+      // pattern and each remote bundles its own runtime. Sharing breaks the
+      // host's SSR — MF substitutes a browser-only svelte build that lacks
+      // server-side onMount/etc.
+      shared: {},
       manifest: true,
       dts: true,
     }),

@@ -1,0 +1,52 @@
+.settings {
+  padding: 24px;
+  font-family: system-ui, sans-serif;
+  max-width: 520px;
+}
+.settings header h1 { margin: 0; color: #2563eb; }
+.settings header p { margin-top: 8px; color: #475569; }
+.settings .account {
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+.settings .avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white; display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+}
+.settings .name { font-weight: 600; color: #0f172a; }
+.settings .email { font-size: 13px; color: #64748b; }
+.settings .row {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.settings label { color: #334155; font-size: 14px; }
+.settings select, .settings input[type="checkbox"] {
+  font: inherit;
+}
+.settings select {
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: white;
+}
+.settings button {
+  margin-top: 24px;
+  padding: 10px 18px;
+  background: #2563eb;
+  color: white;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.settings button:hover { background: #1d4ed8; }

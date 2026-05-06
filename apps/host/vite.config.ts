@@ -29,11 +29,17 @@ export default defineConfig({
           name: 'header',
           entry: 'http://localhost:3003/mf-manifest.json',
         },
+        settings: {
+          type: 'module',
+          name: 'settings',
+          entry: 'http://localhost:3004/mf-manifest.json',
+        },
       },
-      shared: {
-        svelte: { singleton: true, requiredVersion: '^5.0.0' },
-        'svelte/': { singleton: true },
-      },
+      // No svelte sharing across federation: host uses the render-function
+      // pattern and each remote bundles its own runtime. Sharing breaks the
+      // host's SSR — MF substitutes a browser-only svelte build that lacks
+      // server-side onMount/etc.
+      shared: {},
       manifest: true,
       dts: true,
     }),

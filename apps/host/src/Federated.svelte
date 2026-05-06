@@ -1,23 +1,20 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { getCached, setCached } from './federated-cache';
-
-  interface RendererModule<P> {
-    render: (target: HTMLElement, props: P) => () => void;
-  }
+  import { onMount, type Snippet } from 'svelte';
+  import { getCached, setCached, type RendererModule } from './federated-cache';
 
   interface Props {
-    load: () => Promise<RendererModule<Record<string, unknown>>>;
+    load: () => Promise<RendererModule>;
     props?: Record<string, unknown>;
-    fallback?: import('svelte').Snippet;
+    fallback?: Snippet;
   }
 
   let { load, props = {}, fallback }: Props = $props();
 
   let target: HTMLDivElement | undefined = $state();
-  // Initialize mounted=true if cache hit so the fallback never paints on revisit.
-  // First-visit cache miss starts as false → fallback renders briefly until load() resolves.
-  let mounted = $state(getCached(load) !== undefined);
+  // Always false on SSR; federated remotes are CSR-only here. On the client,
+  // onMount synchronously calls render() if the loader is cached, skipping
+  // the fallback on revisit.
+  let mounted = $state(false);
 
   onMount(() => {
     let cleanup: (() => void) | null = null;
@@ -26,6 +23,7 @@
     const cached = getCached(load);
     if (cached && target) {
       cleanup = cached.render(target, props);
+      mounted = true;
     } else {
       load().then((mod) => {
         if (cancelled || !target) return;
@@ -42,12 +40,11 @@
   });
 </script>
 
-<div bind:this={target} class="federated-mount">
-  {#if !mounted && fallback}
-    {@render fallback()}
-  {/if}
-</div>
+<div bind:this={target} class="federated-target"></div>
+{#if !mounted && fallback}
+  {@render fallback()}
+{/if}
 
 <style>
-  .federated-mount { display: contents; }
+  .federated-target { display: contents; }
 </style>

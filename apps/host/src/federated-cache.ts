@@ -1,18 +1,19 @@
-interface RendererModule<P> {
+// The contract every federated remote exposes from `./App`, regardless of
+// the framework it's built with. The host's Federated wrapper only ever
+// touches `render`; the rest is the remote's business.
+export interface RendererModule<P = Record<string, unknown>> {
   render: (target: HTMLElement, props: P) => () => void;
 }
 
-// Module-level cache shared across ALL Federated instances. After the first
-// successful resolution, subsequent <Federated> mounts find the resolved module
-// here and call render() synchronously — no Loading… flash on revisit.
-// Browser's import() also caches, but returns a Promise; this cache stores the
-// resolved value, letting us skip the async microtask entirely.
-const cache = new WeakMap<() => unknown, RendererModule<Record<string, unknown>>>();
+// Module-level cache shared across all Federated instances. Browser's import()
+// also caches, but returns a Promise; this stores the resolved module so a
+// revisit can call render() synchronously and avoid the fallback flash.
+const cache = new WeakMap<() => unknown, RendererModule>();
 
-export function getCached(loader: () => unknown): RendererModule<Record<string, unknown>> | undefined {
+export function getCached(loader: () => unknown): RendererModule | undefined {
   return cache.get(loader);
 }
 
-export function setCached(loader: () => unknown, mod: RendererModule<Record<string, unknown>>): void {
+export function setCached(loader: () => unknown, mod: RendererModule): void {
   cache.set(loader, mod);
 }

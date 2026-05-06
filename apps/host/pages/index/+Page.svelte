@@ -2,11 +2,13 @@
   <h1>JuiceMind Quizzes</h1>
   <p>
     Pick a microfrontend from the sidebar. The header above is also a federated
-    component (header MFE, Svelte) — it stays mounted across navigation.
+    remote — it stays mounted across navigation.
   </p>
   <p>
-    All four apps in this branch are <strong>Vike + Svelte 5 + Vite</strong>,
-    federated via <code>@module-federation/vite</code>. No React anywhere.
+    Host and Svelte remotes are <strong>Vike + Svelte 5 + Vite</strong>; the
+    settings remote is <strong>React 19 + Vite</strong>. All federated via
+    <code>@module-federation/vite</code> using a render-function contract that
+    is framework-agnostic.
   </p>
 </section>
 
