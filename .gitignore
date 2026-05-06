@@ -1,0 +1,12 @@
+node_modules
+dist
+.turbo
+.vite
+*.log
+.DS_Store
+.playwright-mcp/
+
+# MF 2.0 generated types
+**/@mf-types/
+**/@mf-types.zip
+**/.mf/

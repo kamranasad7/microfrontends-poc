@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": false,
+    "paths": {
+      "*": ["./@mf-types/*"]
+    }
+  },
+  "include": ["src", "pages", "vite.config.ts", "@mf-types"]
+}
