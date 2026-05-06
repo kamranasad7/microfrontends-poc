@@ -2,15 +2,13 @@
   import type { Component } from 'svelte';
   import Sidebar from '../src/Sidebar.svelte';
   import Federated from '../src/Federated.svelte';
+  import { loadHeader } from '../src/federated-loaders';
 
   interface Props {
     Page: Component<Record<string, unknown>> | null;
   }
   let { Page }: Props = $props();
 
-  // loadHeader is module-level — same reference across navigations,
-  // so Federated mounts the Header MFE once and keeps it persistent.
-  const loadHeader = () => import('header/App');
   const headerProps = {
     appName: 'JuiceMind Quizzes',
     user: { name: 'Kamran', avatarColor: '#7c3aed' },
