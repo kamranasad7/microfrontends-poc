@@ -2,11 +2,13 @@ import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import vike from 'vike/plugin';
 import { federation } from '@module-federation/vite';
+import { extractSvelteCss } from './vite-plugin-extract-svelte-css';
 
 const PORT = 3000;
 
 export default defineConfig({
   plugins: [
+    extractSvelteCss(),
     vike(),
     svelte(),
     federation({
