@@ -13,7 +13,7 @@ export default defineConfig({
       name: 'quizzes',
       filename: 'remoteEntry.js',
       exposes: {
-        './Page': './src/Page.svelte',
+        './App': './src/App.ts',
       },
       shared: {
         svelte: { singleton: true, requiredVersion: '^5.0.0' },

@@ -1,6 +1,6 @@
 <script lang="ts">
   import Federated from '../../src/Federated.svelte';
-  const loadStudents = () => import('students/Page');
+  const loadStudents = () => import('students/App');
 </script>
 
 <Federated load={loadStudents} props={{ initialCount: 5 }}>

@@ -1,35 +1,44 @@
 <script lang="ts">
-  import type { Component } from 'svelte';
+  import { onMount } from 'svelte';
+
+  interface RendererModule<P> {
+    render: (target: HTMLElement, props: P) => () => void;
+  }
 
   interface Props {
-    load: () => Promise<{ default: Component<any> }>;
+    load: () => Promise<RendererModule<Record<string, unknown>>>;
     props?: Record<string, unknown>;
     fallback?: import('svelte').Snippet;
   }
 
   let { load, props = {}, fallback }: Props = $props();
-  let Resolved = $state<Component<any> | null>(null);
-  let status = $state<'pending' | 'loaded' | 'error'>('pending');
 
-  $effect(() => {
-    console.log('[Federated] effect firing, calling load()');
-    load()
-      .then((mod) => {
-        console.log('[Federated] loaded', mod);
-        Resolved = mod.default;
-        status = 'loaded';
-      })
-      .catch((err) => {
-        console.error('[Federated] load failed', err);
-        status = 'error';
-      });
+  let target = $state<HTMLDivElement | undefined>();
+  let mounted = $state(false);
+
+  onMount(() => {
+    let cleanup: (() => void) | null = null;
+    let cancelled = false;
+
+    load().then((mod) => {
+      if (cancelled || !target) return;
+      cleanup = mod.render(target, props);
+      mounted = true;
+    });
+
+    return () => {
+      cancelled = true;
+      cleanup?.();
+    };
   });
 </script>
 
-{#if status === 'loaded' && Resolved}
-  <Resolved {...props} />
-{:else if status === 'error'}
-  <div style="padding: 24px; color: #dc2626;">Failed to load remote</div>
-{:else if fallback}
-  {@render fallback()}
-{/if}
+<div bind:this={target} class="federated-mount" data-mounted={mounted}>
+  {#if !mounted && fallback}
+    {@render fallback()}
+  {/if}
+</div>
+
+<style>
+  .federated-mount { display: contents; }
+</style>

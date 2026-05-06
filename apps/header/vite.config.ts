@@ -13,7 +13,7 @@ export default defineConfig({
       name: 'header',
       filename: 'remoteEntry.js',
       exposes: {
-        './Header': './src/Header.svelte',
+        './App': './src/App.ts',
       },
       shared: {
         svelte: { singleton: true, requiredVersion: '^5.0.0' },

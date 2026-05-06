@@ -4,7 +4,7 @@
 
   let { Page }: { Page: import('svelte').Component<Record<string, unknown>> } = $props();
 
-  const loadHeader = () => import('header/Header');
+  const loadHeader = () => import('header/App');
   const headerProps = {
     appName: 'JuiceMind Quizzes',
     user: { name: 'Kamran', avatarColor: '#7c3aed' },

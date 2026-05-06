@@ -1,6 +1,6 @@
 <script lang="ts">
   import Federated from '../../src/Federated.svelte';
-  const loadQuizzes = () => import('quizzes/Page');
+  const loadQuizzes = () => import('quizzes/App');
 </script>
 
 <Federated load={loadQuizzes} props={{ greeting: 'Greetings from the host —' }}>

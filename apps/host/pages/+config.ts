@@ -6,9 +6,9 @@ export default {
   extends: vikeSvelte,
   title: 'JuiceMind Quizzes',
   Layout,
-  // Federated imports via @module-federation/vite don't resolve cleanly at SSR time
-  // (browser-only remote entries). Disabling SSR keeps Vike's file-based routing + code
-  // splitting + dev DX, but federated content renders client-side. Same limitation as
-  // the react-vite branch — Vite's federation plugin is CSR-friendly, SSR-rough.
-  ssr: false,
+  // Host SSRs its own content (layout, sidebar, route content). Federated remotes
+  // are loaded client-side only via the Federated wrapper (onMount → render(target,props)).
+  // The wrapper renders an empty target div on server; the actual mount happens after
+  // hydration. So host SSR is on, federated content is hybrid (CSR-mounted into SSR shell).
+  ssr: true,
 } satisfies Config;
