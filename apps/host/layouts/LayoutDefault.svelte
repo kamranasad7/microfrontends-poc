@@ -1,13 +1,8 @@
 <script lang="ts">
-  import type { Component } from 'svelte';
   import Sidebar from '../src/Sidebar.svelte';
   import Federated from '../src/Federated.svelte';
   import { loadHeader } from '../src/federated-loaders';
-
-  interface Props {
-    Page: Component<Record<string, unknown>> | null;
-  }
-  let { Page }: Props = $props();
+  import { layoutPage } from '../src/layout-state';
 
   const headerProps = {
     appName: 'JuiceMind Quizzes',
@@ -26,8 +21,8 @@
   <div class="body">
     <Sidebar />
     <main>
-      {#if Page}
-        <Page />
+      {#if $layoutPage}
+        <svelte:component this={$layoutPage} />
       {/if}
     </main>
   </div>

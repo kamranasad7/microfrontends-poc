@@ -1,6 +1,5 @@
 import vikeSvelte from 'vike-svelte/config';
 import Layout from '../layouts/LayoutDefault.svelte';
-import type { Config } from 'vike/types';
 
 export default {
   extends: vikeSvelte,
@@ -11,4 +10,4 @@ export default {
   // The wrapper renders an empty target div on server; the actual mount happens after
   // hydration. So host SSR is on, federated content is hybrid (CSR-mounted into SSR shell).
   ssr: true,
-} satisfies Config;
+};
