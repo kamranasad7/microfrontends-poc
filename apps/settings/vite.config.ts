@@ -13,9 +13,10 @@ export default defineConfig({
 			exposes: {
 				'./App': './src/App.tsx'
 			},
-			// settings is also a *consumer* — it imports header/Service to read
-			// auth state and drive its own logout button. Cross-framework: a
-			// React MFE consuming a Svelte MFE's pure-TS service module.
+			// settings is also a *consumer* — Settings.tsx imports header/Service
+			// for the cross-framework auth demo. Settings's own dev server (3004)
+			// needs MF to know about header so its import-analysis can resolve
+			// the bare specifier.
 			remotes: {
 				header: {
 					type: 'module',
