@@ -10,11 +10,19 @@
 		"skipLibCheck": true,
 		"sourceMap": true,
 		"strict": true,
-		"moduleResolution": "bundler"
+		"moduleResolution": "bundler",
+		// Federated remote types: TS-only path alias. We deliberately don't use
+		// kit.alias for this — kit.alias propagates to Vite's resolve.alias and
+		// would intercept `import('settings/App')` before @module-federation/vite
+		// can rewrite it to its virtual module path. Defining paths here keeps
+		// resolution TS-only and lets MF own the runtime resolver.
+		// (paths from .svelte-kit/tsconfig.json are NOT inherited when redefined
+		// here, so SK's $lib / $app/types are re-included below.)
+		"paths": {
+			"$lib": ["./src/lib"],
+			"$lib/*": ["./src/lib/*"],
+			"$app/types": ["./.svelte-kit/types/index.d.ts"],
+			"settings/*": ["./@mf-types/settings/*"]
+		}
 	}
-	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
-	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
-	//
-	// To make changes to top-level options such as include and exclude, we recommend extending
-	// the generated config; see https://svelte.dev/docs/kit/configuration#typescript
 }
