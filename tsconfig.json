@@ -22,6 +22,8 @@
 			"$lib": ["./src/lib"],
 			"$lib/*": ["./src/lib/*"],
 			"$app/types": ["./.svelte-kit/types/index.d.ts"],
+			"quizzes/*": ["./@mf-types/quizzes/*"],
+			"students/*": ["./@mf-types/students/*"],
 			"settings/*": ["./@mf-types/settings/*"]
 		}
 	}
