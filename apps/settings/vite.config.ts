@@ -13,6 +13,16 @@ export default defineConfig({
 			exposes: {
 				'./App': './src/App.tsx'
 			},
+			// settings is also a *consumer* — it imports header/Service to read
+			// auth state and drive its own logout button. Cross-framework: a
+			// React MFE consuming a Svelte MFE's pure-TS service module.
+			remotes: {
+				header: {
+					type: 'module',
+					name: 'header',
+					entry: 'http://localhost:3003/mf-manifest.json'
+				}
+			},
 			// No react sharing across federation: each remote bundles its own
 			// runtime. Sharing risks the framework-runtime hijack we hit on the
 			// svelte-vike branch when Svelte was shared.

@@ -9,8 +9,6 @@ export interface SettingsData {
 }
 
 export interface SettingsProps {
-	userName?: string;
-	userEmail?: string;
 	onSave?: (data: SettingsData) => void;
 }
 

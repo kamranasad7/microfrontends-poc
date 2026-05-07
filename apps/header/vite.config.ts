@@ -11,7 +11,8 @@ export default defineConfig({
 			name: 'header',
 			filename: 'remoteEntry.js',
 			exposes: {
-				'./App': './src/App.ts'
+				'./App': './src/App.ts',
+				'./Service': './src/Service.ts'
 			},
 			// Singleton svelte across host + all remotes (see quizzes/vite.config).
 			shared: {

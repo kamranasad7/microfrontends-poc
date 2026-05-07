@@ -14,7 +14,10 @@
 		"isolatedModules": true,
 		"verbatimModuleSyntax": true,
 		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true
+		"forceConsistentCasingInFileNames": true,
+		"paths": {
+			"header/*": ["./@mf-types/header/*"]
+		}
 	},
 	"include": ["src", "vite.config.ts"]
 }

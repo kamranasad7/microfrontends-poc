@@ -10,10 +10,8 @@
 
 	const headerProps: HeaderProps = {
 		appName: 'JuiceMind Quizzes',
-		user: { name: 'Kamran', avatarColor: '#7c3aed' },
 		accentColor: '#0f172a',
-		notificationCount: 3,
-		onLogout: () => alert('Host received logout from header MFE')
+		notificationCount: 3
 	};
 
 	const links = [

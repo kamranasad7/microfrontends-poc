@@ -1,15 +1,20 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import type { HeaderProps } from './App';
+	import * as Auth from './Service';
 
 	let {
 		appName,
-		user,
 		accentColor = '#0f172a',
-		notificationCount = 3,
-		onLogout
+		notificationCount = 3
 	}: HeaderProps = $props();
 
 	let menuOpen = $state(false);
+	// Drive the visible user from the auth service so cross-framework callers
+	// (settings calling Auth.logout()) flip the header instantly.
+	let authState = $state(Auth.getAuthState());
+
+	onMount(() => Auth.onAuthChange((s) => (authState = s)));
 
 	function toggleMenu() {
 		menuOpen = !menuOpen;
@@ -17,7 +22,11 @@
 
 	function handleLogout() {
 		menuOpen = false;
-		onLogout?.();
+		Auth.logout();
+	}
+
+	function handleLogin() {
+		Auth.login();
 	}
 </script>
 
@@ -28,22 +37,26 @@
 		<span class="tag">rendered by header MFE (Svelte)</span>
 	</div>
 	<div class="right">
-		<button class="bell" aria-label="Notifications">
-			🔔
-			{#if notificationCount > 0}
-				<span class="badge">{notificationCount}</span>
+		{#if authState.isAuthenticated && authState.user}
+			<button class="bell" aria-label="Notifications">
+				🔔
+				{#if notificationCount > 0}
+					<span class="badge">{notificationCount}</span>
+				{/if}
+			</button>
+			<button class="user" onclick={toggleMenu}>
+				<span class="avatar" style="background: {authState.user.avatarColor ?? '#7c3aed'}">
+					{authState.user.name.charAt(0).toUpperCase()}
+				</span>
+				<span>{authState.user.name}</span>
+			</button>
+			{#if menuOpen}
+				<div class="menu">
+					<button type="button" onclick={handleLogout}>Log out</button>
+				</div>
 			{/if}
-		</button>
-		<button class="user" onclick={toggleMenu}>
-			<span class="avatar" style="background: {user.avatarColor ?? '#7c3aed'}">
-				{user.name.charAt(0).toUpperCase()}
-			</span>
-			<span>{user.name}</span>
-		</button>
-		{#if menuOpen}
-			<div class="menu">
-				<button type="button" onclick={handleLogout}>Log out</button>
-			</div>
+		{:else}
+			<button class="login" type="button" onclick={handleLogin}>Sign in</button>
 		{/if}
 	</div>
 </header>
@@ -127,6 +140,15 @@
 		justify-content: center;
 		font-weight: 700;
 		font-size: 13px;
+	}
+	.login {
+		padding: 6px 14px;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.12);
+		font-weight: 600;
+	}
+	.login:hover {
+		background: rgba(255, 255, 255, 0.18);
 	}
 	.menu {
 		position: absolute;

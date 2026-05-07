@@ -5,8 +5,6 @@
 	const loadSettings = () => import('settings/App');
 
 	const props: SettingsProps = {
-		userName: 'Kamran',
-		userEmail: 'kamran@juicemind.app',
 		onSave: (data: SettingsData) =>
 			alert('Host received settings save:\n' + JSON.stringify(data, null, 2))
 	};
