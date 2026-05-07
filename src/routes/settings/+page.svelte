@@ -1,7 +1,8 @@
 <script lang="ts">
 	import ReactMFE from '$lib/mfe-adapters/ReactMFE.svelte';
-	import { loadSettings } from '$lib/mfe-adapters/loaders';
 	import type { SettingsData, SettingsProps } from 'settings/App';
+
+	const loadSettings = () => import('settings/App');
 
 	const props: SettingsProps = {
 		userName: 'Kamran',
