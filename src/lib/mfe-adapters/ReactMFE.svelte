@@ -18,6 +18,9 @@
 	let mounted = $state(false);
 
 	onMount(() => {
+		// Belt-and-braces: SK's +page.ts also installs these before triggering
+		// the federated import on hover-preload, but ReactMFE may be used from
+		// non-SK contexts (e.g. a route without a matching +page.ts).
 		installReactRefreshShims();
 
 		let cleanup: (() => void) | null = null;
