@@ -18,6 +18,11 @@ export default defineConfig({
 					name: 'students',
 					entry: 'http://localhost:3002/mf-manifest.json'
 				},
+				header: {
+					type: 'module',
+					name: 'header',
+					entry: 'http://localhost:3003/mf-manifest.json'
+				},
 				settings: {
 					type: 'module',
 					name: 'settings',

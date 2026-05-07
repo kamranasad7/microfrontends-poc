@@ -1,8 +1,20 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import favicon from '$lib/assets/favicon.svg';
+	import SvelteMFE from '$lib/mfe-adapters/SvelteMFE.svelte';
+	import type { HeaderProps } from 'header/App';
 
 	let { children } = $props();
+
+	const loadHeader = () => import('header/App');
+
+	const headerProps: HeaderProps = {
+		appName: 'JuiceMind Quizzes',
+		user: { name: 'Kamran', avatarColor: '#7c3aed' },
+		accentColor: '#0f172a',
+		notificationCount: 3,
+		onLogout: () => alert('Host received logout from header MFE')
+	};
 
 	const links = [
 		{ href: '/', label: 'Home' },
@@ -17,10 +29,11 @@
 </svelte:head>
 
 <div class="app">
-	<header>
-		<strong>JuiceMind Quizzes</strong>
-		<span class="tag">SvelteKit baseline (no MF)</span>
-	</header>
+	<SvelteMFE load={loadHeader} props={headerProps}>
+		{#snippet fallback()}
+			<div class="header-fallback"></div>
+		{/snippet}
+	</SvelteMFE>
 	<div class="body">
 		<aside>
 			<nav>
@@ -49,19 +62,11 @@
 		height: 100vh;
 		font-family: system-ui, sans-serif;
 	}
-	header {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		padding: 0 20px;
+	/* Matches the federated header's chrome so first paint doesn't shift. */
+	.header-fallback {
 		height: 56px;
 		background: #0f172a;
-		color: white;
 		flex-shrink: 0;
-	}
-	.tag {
-		font-size: 12px;
-		opacity: 0.6;
 	}
 	.body {
 		display: flex;

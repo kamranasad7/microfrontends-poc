@@ -24,6 +24,7 @@
 			"$app/types": ["./.svelte-kit/types/index.d.ts"],
 			"quizzes/*": ["./@mf-types/quizzes/*"],
 			"students/*": ["./@mf-types/students/*"],
+			"header/*": ["./@mf-types/header/*"],
 			"settings/*": ["./@mf-types/settings/*"]
 		}
 	}
