@@ -7,13 +7,18 @@ export default defineConfig({
 		sveltekit(),
 		federation({
 			name: 'host',
-			// No remotes / exposes yet — just verifying the plugin coexists
-			// with @sveltejs/kit's vite plugin without breaking dev or build.
-			remotes: {},
-			exposes: {},
+			remotes: {
+				settings: {
+					type: 'module',
+					name: 'settings',
+					entry: 'http://localhost:3004/mf-manifest.json'
+				}
+			},
+			// No framework sharing across federation — each remote bundles its
+			// own runtime. Render-fn contract makes this safe.
 			shared: {},
 			manifest: true,
-			dts: false
+			dts: true
 		})
 	]
 });
