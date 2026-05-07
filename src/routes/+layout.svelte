@@ -2,7 +2,6 @@
 	import { page } from '$app/state';
 	import favicon from '$lib/assets/favicon.svg';
 	import SvelteMFE from '$lib/mfe-adapters/SvelteMFE.svelte';
-	import { installReactRefreshShims } from '$lib/mfe-adapters/react-refresh-shim';
 	import type { HeaderProps } from 'header/App';
 
 	let { children } = $props();
@@ -14,23 +13,6 @@
 		accentColor: '#0f172a',
 		notificationCount: 3
 	};
-
-	// Manual hover-preloaders. Quizzes/students rely on SvelteKit's `+page.ts`
-	// `load()` for preload (works fine). settings can't — its mf-manifest
-	// declares its own remote (header), and SK's hover-preload context
-	// deadlocks during nested-remote registration. We warm the browser's
-	// module cache directly here; ReactMFE's onMount then finds the import
-	// already settled.
-	const preloaders: Record<string, () => Promise<unknown>> = {
-		'/settings': () => {
-			installReactRefreshShims();
-			return import('settings/App');
-		}
-	};
-
-	function preload(href: string) {
-		preloaders[href]?.();
-	}
 
 	const links = [
 		{ href: '/', label: 'Home' },
@@ -54,11 +36,7 @@
 		<aside>
 			<nav>
 				{#each links as link (link.href)}
-					<a
-						href={link.href}
-						class:active={page.url.pathname === link.href}
-						onmouseenter={() => preload(link.href)}
-						onfocus={() => preload(link.href)}>{link.label}</a>
+					<a href={link.href} class:active={page.url.pathname === link.href}>{link.label}</a>
 				{/each}
 			</nav>
 		</aside>
