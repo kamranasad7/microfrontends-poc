@@ -2,15 +2,15 @@
 	import ReactMFE from '$lib/mfe-adapters/ReactMFE.svelte';
 	import type { SettingsData, SettingsProps } from 'settings/App';
 
-	const loadSettings = () => import('settings/App');
+	const load = () => import('settings/App');
 
-	const props: SettingsProps = {
-		onSave: (data: SettingsData) =>
-			alert('Host received settings save:\n' + JSON.stringify(data, null, 2))
+	const mfeProps: SettingsProps = {
+		onSave: (saved: SettingsData) =>
+			alert('Host received settings save:\n' + JSON.stringify(saved, null, 2))
 	};
 </script>
 
-<ReactMFE load={loadSettings} {props}>
+<ReactMFE {load} props={mfeProps}>
 	{#snippet fallback()}
 		<div class="loading">Loading settings…</div>
 	{/snippet}

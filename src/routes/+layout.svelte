@@ -26,7 +26,7 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div class="app">
+<div class="app" data-sveltekit-preload-data="hover" data-sveltekit-preload-code="hover">
 	<SvelteMFE load={loadHeader} props={headerProps}>
 		{#snippet fallback()}
 			<div class="header-fallback"></div>
