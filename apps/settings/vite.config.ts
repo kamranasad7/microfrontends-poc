@@ -5,6 +5,9 @@ import { federation } from '@module-federation/vite';
 const PORT = 3004;
 
 export default defineConfig({
+	// vite's `base` becomes the manifest's publicPath — absolute URL needed so
+	// the host (different origin) can resolve this remote's chunks correctly.
+	base: `http://localhost:${PORT}/`,
 	plugins: [
 		react(),
 		federation({

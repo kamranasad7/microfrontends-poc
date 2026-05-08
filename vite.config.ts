@@ -29,14 +29,11 @@ export default defineConfig({
 					entry: 'http://localhost:3004/mf-manifest.json'
 				}
 			},
-			// Share svelte as a singleton across host + every Svelte remote so
-			// only one svelte runtime ships to the browser, and stores/contexts
-			// stay identity-equal across MFEs. React MFEs (settings) don't share
-			// anything — they bundle their own runtime.
-			shared: {
-				svelte: { singleton: true, requiredVersion: '^5.55.0' },
-				'svelte/': { singleton: true }
-			},
+			// TEMP: shared svelte singleton causes a runtime crash in the
+			// production host bundle (TypeError reading '__esModule' on a
+			// shared chunk). Investigating — leave off for the build-validation
+			// pass.
+			shared: {},
 			manifest: true,
 			dts: true
 		})

@@ -5,6 +5,9 @@ import { federation } from '@module-federation/vite';
 const PORT = 3001;
 
 export default defineConfig({
+	// vite's `base` becomes the manifest's publicPath — absolute URL needed so
+	// the host (different origin) can resolve this remote's chunks correctly.
+	base: `http://localhost:${PORT}/`,
 	plugins: [
 		svelte(),
 		federation({
@@ -13,14 +16,11 @@ export default defineConfig({
 			exposes: {
 				'./App': './src/App.ts'
 			},
-			// Singleton svelte across host + all remotes. The federation runtime
-			// resolves every `import 'svelte'` to a single shared instance, so we
-			// don't ship the runtime per remote and stores/contexts created by
-			// one remote are usable from another.
-			shared: {
-				svelte: { singleton: true, requiredVersion: '^5.55.0' },
-				'svelte/': { singleton: true }
-			},
+			// TEMP: shared svelte singleton crashes in production bundles
+			// (TypeError reading '__esModule' on a loadShare chunk). Each remote
+			// bundles its own svelte runtime in this build; revisit when
+			// chasing the singleton init issue. Dev works fine with sharing.
+			shared: {},
 			manifest: true,
 			dts: true
 		})

@@ -5,6 +5,9 @@ import { federation } from '@module-federation/vite';
 const PORT = 3002;
 
 export default defineConfig({
+	// vite's `base` becomes the manifest's publicPath — absolute URL needed so
+	// the host (different origin) can resolve this remote's chunks correctly.
+	base: `http://localhost:${PORT}/`,
 	plugins: [
 		svelte(),
 		federation({
@@ -13,11 +16,9 @@ export default defineConfig({
 			exposes: {
 				'./App': './src/App.ts'
 			},
-			// Singleton svelte across host + all remotes (see quizzes/vite.config).
-			shared: {
-				svelte: { singleton: true, requiredVersion: '^5.55.0' },
-				'svelte/': { singleton: true }
-			},
+			// TEMP: shared svelte singleton crashes in production bundles
+			// (see quizzes/vite.config.ts). Each remote bundles its own svelte.
+			shared: {},
 			manifest: true,
 			dts: true
 		})
