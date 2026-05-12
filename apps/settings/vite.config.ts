@@ -16,10 +16,19 @@ export default defineConfig({
 			exposes: {
 				'./App': './src/App.tsx'
 			},
-			// settings is also a *consumer* — Settings.tsx imports header/Service
-			// for the cross-framework auth demo. Settings's own dev server (3004)
-			// needs MF to know about header so its import-analysis can resolve
-			// the bare specifier.
+			// settings consumes header/Service (cross-framework auth). Vite's
+			// import-analysis and the MF dts plugin both need header declared
+			// here so the bare specifier resolves at build time.
+			//
+			// KNOWN LIMITATION: declaring nested remotes here bakes them into
+			// settings's mf-manifest.json, and SK's hover-preload context can't
+			// reconcile that nested-remote handshake within its preload window
+			// (App.tsx never fetches on hover; click works fine because the
+			// page lifecycle gives it more time). Tried fire-and-forget,
+			// manual hover handlers, runtime init + loadRemote, and host-to-
+			// settings prop drilling. Each was patchier than this. We keep
+			// the clean direct import and accept that /settings doesn't get
+			// the same hover-to-instant feel as /quizzes and /students.
 			remotes: {
 				header: {
 					type: 'module',

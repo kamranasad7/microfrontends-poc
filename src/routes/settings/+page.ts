@@ -1,15 +1,18 @@
-import { installReactRefreshShims } from '$lib/mfe-adapters/react-refresh-shim';
-
+// Federated remotes are CSR-only.
 export const ssr = false;
 
-export const load = () => {
-	installReactRefreshShims();
-	// Fire-and-forget: starts the federated import to warm the browser cache.
-	// We deliberately don't `await` — settings's mf-manifest declares its own
-	// `remotes` (header — for the cross-framework auth Service consumption),
-	// and the host's runtime takes longer than SK's hover-preload tolerates to
-	// reconcile that nested-remote registration. Awaiting here makes SK report
-	// "Internal Error" on hover. The dynamic import keeps progressing in the
-	// background; ReactMFE's onMount picks up the cached promise on click.
-	import('settings/App').catch(() => {});
-};
+// KNOWN LIMITATION: no preload-of-federated-content for /settings.
+//
+// quizzes/students await the federated import here and SK's hover-preload
+// completes the full federated graph before click. settings can't — its
+// mf-manifest declares a nested remote (header — for the cross-framework
+// auth Service consumption). The federation runtime can't reconcile that
+// nested-remote handshake inside SK's hover-preload window; the App fetch
+// never fires on hover. Click still works because the page lifecycle gives
+// the handshake longer.
+//
+// Tried several workarounds (fire-and-forget here, manual hover handler in
+// the layout, runtime init + loadRemote, prop drilling state from host).
+// Each added more boilerplate than the limitation justified. Keep the route
+// minimal — ssr=false only — and accept /settings clicks slightly slower on
+// first visit.

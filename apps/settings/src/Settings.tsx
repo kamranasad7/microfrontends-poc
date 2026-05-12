@@ -6,9 +6,10 @@ import './Settings.css';
 
 export default function Settings({ onSave }: SettingsProps) {
 	// Federated import — `Auth` here is the *same module instance* used by the
-	// header MFE. Subscribing in this React component reacts to logout()
-	// triggered from the Svelte header (and vice versa). Pure-TS service module
-	// → no framework runtime crosses the federation boundary.
+	// header MFE (federation runtime + browser ES-module caching dedupe to a
+	// single instance). Subscribing here reacts to logout() triggered from the
+	// Svelte header (and vice versa). Pure-TS service module → no framework
+	// runtime crosses the federation boundary.
 	const [authState, setAuthState] = useState<AuthState>(Auth.getAuthState());
 	useEffect(() => Auth.onAuthChange(setAuthState), []);
 

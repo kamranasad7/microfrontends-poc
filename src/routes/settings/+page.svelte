@@ -5,8 +5,8 @@
 	const load = () => import('settings/App');
 
 	const mfeProps: SettingsProps = {
-		onSave: (saved: SettingsData) =>
-			alert('Host received settings save:\n' + JSON.stringify(saved, null, 2))
+		onSave: (data: SettingsData) =>
+			alert('Host received settings save:\n' + JSON.stringify(data, null, 2))
 	};
 </script>
 
