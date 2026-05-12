@@ -6,7 +6,28 @@ settings:
 
 importers:
 
-  .:
+  .: {}
+
+  apps/header:
+    dependencies:
+      svelte:
+        specifier: ^5.55.5
+        version: 5.55.5
+    devDependencies:
+      '@module-federation/vite':
+        specifier: ^1.15.2
+        version: 1.15.2(typescript@5.9.3)(vite@8.0.11(@types/node@25.6.0))
+      '@sveltejs/vite-plugin-svelte':
+        specifier: ^7.1.1
+        version: 7.1.1(svelte@5.55.5)(vite@8.0.11(@types/node@25.6.0))
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vite:
+        specifier: ^8.0.11
+        version: 8.0.11(@types/node@25.6.0)
+
+  apps/host:
     devDependencies:
       '@module-federation/vite':
         specifier: ^1.15.2
@@ -27,32 +48,13 @@ importers:
         specifier: ^5.55.2
         version: 5.55.5
       svelte-check:
-        specifier: ^4.4.6
+        specifier: ^4.4.8
         version: 4.4.8(picomatch@4.0.4)(svelte@5.55.5)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
       vite:
         specifier: ^8.0.7
-        version: 8.0.11(@types/node@25.6.0)
-
-  apps/header:
-    dependencies:
-      svelte:
-        specifier: ^5.55.5
-        version: 5.55.5
-    devDependencies:
-      '@module-federation/vite':
-        specifier: ^1.15.2
-        version: 1.15.2(typescript@5.9.3)(vite@8.0.11(@types/node@25.6.0))
-      '@sveltejs/vite-plugin-svelte':
-        specifier: ^7.1.1
-        version: 7.1.1(svelte@5.55.5)(vite@8.0.11(@types/node@25.6.0))
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-      vite:
-        specifier: ^8.0.11
         version: 8.0.11(@types/node@25.6.0)
 
   apps/quizzes:

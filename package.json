@@ -1,25 +1,16 @@
 {
 	"name": "microfrontend-poc",
 	"private": true,
-	"version": "0.0.1",
-	"type": "module",
+	"version": "0.0.0",
+	"description": "Workspace root — host and remotes live in apps/*",
 	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo ''",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+		"dev:all": "pnpm -r --parallel run dev",
+		"dev:host": "pnpm --filter host dev",
+		"build": "pnpm -r run build",
+		"build:host": "pnpm --filter host build",
+		"check": "pnpm --filter host check",
+		"preview:host": "pnpm --filter host preview",
+		"clean": "pnpm -r exec rm -rf node_modules .svelte-kit @mf-types dist build .mf && rm -rf node_modules apps/host/@mf-types"
 	},
-	"devDependencies": {
-		"@module-federation/vite": "^1.15.2",
-		"@sveltejs/adapter-node": "^5.5.4",
-		"@sveltejs/kit": "^2.57.0",
-		"@sveltejs/vite-plugin-svelte": "^7.0.0",
-		"@types/node": "^25.6.0",
-		"svelte": "^5.55.2",
-		"svelte-check": "^4.4.6",
-		"typescript": "^5.9.3",
-		"vite": "^8.0.7"
-	}
+	"packageManager": "pnpm@10.26.2"
 }

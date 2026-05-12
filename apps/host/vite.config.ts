@@ -1,6 +1,13 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { federation } from '@module-federation/vite';
 import { defineConfig } from 'vite';
+import { mfeUrl } from '../../tools/vite-mfe';
+
+const moduleRemote = (name: string, defaultPort: number) => ({
+	type: 'module' as const,
+	name,
+	entry: `${mfeUrl(name, defaultPort)}/mf-manifest.json`
+});
 
 export default defineConfig({
 	plugins: [
@@ -8,26 +15,10 @@ export default defineConfig({
 		federation({
 			name: 'host',
 			remotes: {
-				quizzes: {
-					type: 'module',
-					name: 'quizzes',
-					entry: 'http://localhost:3001/mf-manifest.json'
-				},
-				students: {
-					type: 'module',
-					name: 'students',
-					entry: 'http://localhost:3002/mf-manifest.json'
-				},
-				header: {
-					type: 'module',
-					name: 'header',
-					entry: 'http://localhost:3003/mf-manifest.json'
-				},
-				settings: {
-					type: 'module',
-					name: 'settings',
-					entry: 'http://localhost:3004/mf-manifest.json'
-				}
+				quizzes: moduleRemote('quizzes', 3001),
+				students: moduleRemote('students', 3002),
+				header: moduleRemote('header', 3003),
+				settings: moduleRemote('settings', 3004)
 			},
 			// TEMP: shared svelte singleton causes a runtime crash in the
 			// production host bundle (TypeError reading '__esModule' on a
