@@ -25,7 +25,8 @@
 			"quizzes/*": ["./@mf-types/quizzes/*"],
 			"students/*": ["./@mf-types/students/*"],
 			"header/*": ["./@mf-types/header/*"],
-			"settings/*": ["./@mf-types/settings/*"]
+			"settings/*": ["./@mf-types/settings/*"],
+			"auth/*": ["./@mf-types/auth/*"]
 		}
 	}
 }

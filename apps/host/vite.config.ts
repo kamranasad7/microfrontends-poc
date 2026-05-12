@@ -18,7 +18,8 @@ export default defineConfig({
 				quizzes: moduleRemote('quizzes', 3001),
 				students: moduleRemote('students', 3002),
 				header: moduleRemote('header', 3003),
-				settings: moduleRemote('settings', 3004)
+				settings: moduleRemote('settings', 3004),
+				auth: moduleRemote('auth', 3005)
 			},
 			// TEMP: shared svelte singleton causes a runtime crash in the
 			// production host bundle (TypeError reading '__esModule' on a

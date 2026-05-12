@@ -1,6 +1,6 @@
 # JuiceMind Microfrontend POC — `sveltekit-host`
 
-SvelteKit host consuming federated **Svelte** and **React** microfrontends via Module Federation 2.0. Single render-function contract, framework-agnostic at the integration boundary.
+SvelteKit host consuming federated **Svelte**, **React**, and **Vue** microfrontends via Module Federation 2.0. Single render-function contract, framework-agnostic at the integration boundary.
 
 ## Stack
 
@@ -10,6 +10,7 @@ SvelteKit host consuming federated **Svelte** and **React** microfrontends via M
   - `apps/quizzes` — Svelte 5 — `:3001`
   - `apps/students` — Svelte 5 — `:3002`
   - `apps/settings` — React 19 — `:3004`
+  - `apps/auth` — Vue 3.5 — `:3005`
 - pnpm workspaces
 
 ## The contract
@@ -20,7 +21,7 @@ Every MFE exposes a render function from `./App`:
 export function render(target: HTMLElement, props: P): () => void
 ```
 
-That's it. Cleanup on unmount. The host's adapter (`SvelteMFE.svelte` / `ReactMFE.svelte`) binds a `<div>` ref, calls `render` in `onMount`, returns the cleanup. Both adapters are ~30 lines. The host never knows whether the module behind the contract is Svelte or React.
+That's it. Cleanup on unmount. The host's adapter (`SvelteMFE.svelte` / `ReactMFE.svelte` / `VueMFE.svelte`) binds a `<div>` ref, calls `render` in `onMount`, returns the cleanup. Each adapter is ~30 lines. The host never knows whether the module behind the contract is Svelte, React, or Vue.
 
 ## Architecture
 
@@ -30,14 +31,15 @@ SvelteKit host (:5173)
 ├── /                 home blurb (SK-native)
 ├── /quizzes          <SvelteMFE load=quizzes>         → quizzes  (:3001)
 ├── /students         <SvelteMFE load=students>        → students (:3002)
-└── /settings         <ReactMFE  load=settings>        → settings (:3004)
+├── /settings         <ReactMFE  load=settings>        → settings (:3004)
+└── /auth             <VueMFE    load=auth>            → auth     (:3005)
 ```
 
 The header lives in `+layout.svelte`, so it mounts once and persists across navigation (verified — same DOM node survives route changes).
 
 ## Cross-MFE service modules
 
-`apps/header` exposes a second module — `./Service` — a pure-TS auth state file with `logout()`, `login()`, `onAuthChange(cb)`. The settings MFE (React) imports `header/Service` and subscribes. Clicking *Sign out* in the React panel flips the Svelte header's avatar to *Sign in* instantly. Federation dedupes — both consumers get the same module instance.
+`apps/header` exposes a second module — `./Service` — a pure-TS auth state file with `logout()`, `login()`, `onAuthChange(cb)`. The settings MFE (React) and the auth MFE (Vue) both import `header/Service` and subscribe. Signing in from the Vue login screen flips the Svelte header avatar **and** updates the React settings panel instantly; signing out from settings flips Vue's screen back to the form. Federation dedupes — all three consumers get the same module instance.
 
 This is the pattern for any cross-cutting concern (auth, analytics, feature flags, i18n): the owning MFE exposes a service module alongside its UI exposes; consumers stay framework-agnostic.
 
@@ -53,19 +55,21 @@ microfrontend-poc/
 │   │   │   ├── lib/mfe-adapters/
 │   │   │   │   ├── SvelteMFE.svelte           mounts any render-fn remote
 │   │   │   │   ├── ReactMFE.svelte            same + plugin-react preamble shim
+│   │   │   │   ├── VueMFE.svelte              same shape as SvelteMFE
 │   │   │   │   └── react-refresh-shim.ts      idempotent helper
 │   │   │   └── routes/
 │   │   │       ├── +layout.svelte             shell + federated header
 │   │   │       └── <route>/
 │   │   │           ├── +page.ts               ssr=false + load() fires the import
-│   │   │           └── +page.svelte           mounts SvelteMFE / ReactMFE
+│   │   │           └── +page.svelte           mounts SvelteMFE / ReactMFE / VueMFE
 │   │   ├── vite.config.ts                     host federation config
 │   │   ├── svelte.config.js                   SK config (adapter-node)
 │   │   └── package.json
 │   ├── header/                       Svelte remote (UI + Service)
 │   ├── quizzes/                      Svelte remote
 │   ├── students/                     Svelte remote
-│   └── settings/                     React remote
+│   ├── settings/                     React remote
+│   └── auth/                         Vue remote (login screen)
 ├── package.json                      workspace root — orchestration scripts only
 ├── pnpm-workspace.yaml               packages: [apps/*]
 └── README.md
@@ -75,7 +79,7 @@ microfrontend-poc/
 
 ```
 pnpm install
-pnpm dev:all          # all 5 dev servers in one terminal, prefixed output
+pnpm dev:all          # all 6 dev servers in one terminal, prefixed output
 ```
 
 Or individually: `pnpm dev` (host on `:5173`), `pnpm --filter <name> dev` per app.
@@ -94,7 +98,7 @@ Each remote emits `dist/{mf-manifest.json, remoteEntry.js, @mf-types.zip}` — t
 
 Quizzes / students / header routes' `+page.ts` each `await import('<remote>/App')` inside `load()`. SK runs `load()` on link hover, the dynamic import warms the browser cache, click finds the module already settled — no fallback flash.
 
-Settings's `+page.ts` is intentionally `ssr=false` only, no `load()`. Its `mf-manifest.json` declares a nested remote (header — the Service consumer), and the federation runtime can't reconcile that nested-remote handshake inside SK's hover-preload window. Click navigation still works because the page lifecycle gives the handshake more time — just no instant-feel hover-preload for `/settings`.
+Settings's and auth's `+page.ts` are intentionally `ssr=false` only, no `load()`. Both declare a nested remote in their `mf-manifest.json` (header — the Service consumer), and the federation runtime can't reconcile that nested-remote handshake inside SK's hover-preload window. Click navigation still works because the page lifecycle gives the handshake more time — just no instant-feel hover-preload for `/settings` or `/auth`.
 
 ## CSS strategy — federated
 

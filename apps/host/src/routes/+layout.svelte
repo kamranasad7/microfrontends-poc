@@ -18,7 +18,8 @@
 		{ href: '/', label: 'Home' },
 		{ href: '/quizzes', label: 'Quizzes' },
 		{ href: '/students', label: 'Students' },
-		{ href: '/settings', label: 'Settings' }
+		{ href: '/settings', label: 'Settings' },
+		{ href: '/auth', label: 'Sign in' }
 	];
 </script>
 
