@@ -43,25 +43,32 @@ This is the pattern for any cross-cutting concern (auth, analytics, feature flag
 
 ## File layout
 
+Pure monorepo — host and every remote live as siblings under `apps/*`. The repo root is a thin workspace shell.
+
 ```
 microfrontend-poc/
-├── src/                              SvelteKit host
-│   ├── lib/mfe-adapters/
-│   │   ├── SvelteMFE.svelte          mounts any render-fn remote
-│   │   ├── ReactMFE.svelte           same + plugin-react preamble shim
-│   │   └── react-refresh-shim.ts     idempotent helper
-│   └── routes/
-│       ├── +layout.svelte            shell + federated header
-│       └── <route>/
-│           ├── +page.ts              ssr=false + load() fires the import
-│           └── +page.svelte          mounts SvelteMFE / ReactMFE
 ├── apps/
+│   ├── host/                         SvelteKit host
+│   │   ├── src/
+│   │   │   ├── lib/mfe-adapters/
+│   │   │   │   ├── SvelteMFE.svelte           mounts any render-fn remote
+│   │   │   │   ├── ReactMFE.svelte            same + plugin-react preamble shim
+│   │   │   │   └── react-refresh-shim.ts      idempotent helper
+│   │   │   └── routes/
+│   │   │       ├── +layout.svelte             shell + federated header
+│   │   │       └── <route>/
+│   │   │           ├── +page.ts               ssr=false + load() fires the import
+│   │   │           └── +page.svelte           mounts SvelteMFE / ReactMFE
+│   │   ├── vite.config.ts                     host federation config
+│   │   ├── svelte.config.js                   SK config (adapter-node)
+│   │   └── package.json
 │   ├── header/                       Svelte remote (UI + Service)
 │   ├── quizzes/                      Svelte remote
 │   ├── students/                     Svelte remote
 │   └── settings/                     React remote
-├── vite.config.ts                    host federation config
-└── svelte.config.js                  SK config (adapter-node)
+├── package.json                      workspace root — orchestration scripts only
+├── pnpm-workspace.yaml               packages: [apps/*]
+└── README.md
 ```
 
 ## Dev
@@ -71,23 +78,61 @@ pnpm install
 pnpm dev:all          # all 5 dev servers in one terminal, prefixed output
 ```
 
-Or individually: `pnpm dev` (host on `:5173`), `pnpm --filter <name> dev` per remote.
+Or individually: `pnpm dev` (host on `:5173`), `pnpm --filter <name> dev` per app.
 
 ## Build & run prod
 
 ```
-pnpm -r --include-workspace-root build
-PORT=5173 node build/index.js                 # host
-pnpm --filter <name> preview                  # each remote (or static-serve dist/)
+pnpm build                                    # all apps via pnpm -r
+PORT=5173 node apps/host/build/index.js       # host (adapter-node output)
+pnpm --filter <name> preview                  # each remote
 ```
 
 Each remote emits `dist/{mf-manifest.json, remoteEntry.js, @mf-types.zip}` — the deploy contract from `cicd-plan.md`.
 
 ## Hover preload
 
-Each MFE route's `+page.ts` does a side-effect-only federated import inside `load()`. SK runs `load()` on link hover, the dynamic import warms the browser cache, and click navigation finds the module already settled — no fallback flash.
+Quizzes / students / header routes' `+page.ts` each `await import('<remote>/App')` inside `load()`. SK runs `load()` on link hover, the dynamic import warms the browser cache, click finds the module already settled — no fallback flash.
 
-Notable: settings's `+page.ts` deliberately **doesn't `await`** the import. Settings's `mf-manifest.json` declares a nested remote (header — the Service consumer), and awaiting that nested-remote registration deadlocks SK's hover-preload context. Fire-and-forget keeps SK's preload synchronous; the federation handshake completes in the background.
+Settings's `+page.ts` is intentionally `ssr=false` only, no `load()`. Its `mf-manifest.json` declares a nested remote (header — the Service consumer), and the federation runtime can't reconcile that nested-remote handshake inside SK's hover-preload window. Click navigation still works because the page lifecycle gives the handshake more time — just no instant-feel hover-preload for `/settings`.
+
+## CSS strategy — federated
+
+Component-scoped styles aren't auto-isolated across federated boundaries. Svelte's default `cssHash` is `svelte-${hash(filename)}` — and **two MFEs with the same relative file path (`src/Page.svelte`) generate the same scope class**. CSS rules from a different MFE end up matching elements in this MFE; the second-loaded rule wins. Symptom: hover Quizzes link → Students's CSS preloads → Quizzes title turns green.
+
+Fix lives in `tools/vite-mfe.ts` as `cssHashFor(name)`, used by every Svelte MFE:
+
+```ts
+import { cssHashFor, mfeBase } from '../../tools/vite-mfe';
+
+const NAME = 'quizzes';
+const PORT = 3001;
+
+export default defineConfig({
+  ...mfeBase(PORT),
+  plugins: [
+    svelte({ compilerOptions: { cssHash: cssHashFor(NAME) } }),
+    federation({ name: NAME, ... }),
+  ],
+});
+```
+
+`cssHashFor('quizzes')` returns a function that produces `quizzes-${hash(filename)}` — per-MFE namespace, no `svelte-` prefix needed since the MFE name already disambiguates. Classes look like `quizzes-qv603g`, `students-qv603g`, `header-qv603g` — collision impossible.
+
+**For Tailwind (which this stack will use):** Tailwind classes are global by design — `bg-blue-500` is the same rule everywhere, so cross-MFE "collisions" are benign (same rule on both sides). The real cost is **shipping Tailwind's base layer once per MFE** (each MFE bundles its own `@tailwind base/components/utilities` output). Two reasonable strategies:
+
+1. **Each MFE bundles its own Tailwind.** Simplest. Adds ~10–15 KB gzipped of duplicated base per MFE. Total tolerable for 4–5 MFEs; gets expensive at 20+.
+2. **Shared design-system package** (e.g. `packages/ui-tokens`) owns the Tailwind config + a single built CSS bundle that the host loads at `+layout.svelte`. MFEs use the classes without bundling their own base. Lower total CSS, but introduces a shared workspace dep — every MFE must align on the Tailwind version + config.
+
+Either way, **component-scoped styles still need per-MFE `cssHash` namespacing** to avoid collisions with similarly-named files. Tailwind solves the design-system layer; it doesn't solve scope-hash collisions in Svelte components.
+
+## Known traps
+
+Hit during this POC; documented so the next person doesn't have to.
+
+- **Don't put `import('<remote>/App')` syntax inside JS comments.** `@module-federation/vite`'s source transform is not comment-aware — it matches the literal `import(...)` text inside comments and rewrites it as real code, which silently corrupts the bootstrap chain (no error, the hover-preload graph just stalls partway). Symptom: federated route loads fine on click but never preloads on hover. Found this for both `apps/host/src/routes/quizzes/+page.ts` and `settings/+page.ts` earlier — a comment containing the dynamic-import string broke preload.
+
+- **Svelte scope-hash collision across MFEs**, fixed via per-MFE `cssHash` (see *CSS strategy — federated* above).
 
 ## Known limitations / deferred work
 
