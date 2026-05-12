@@ -1,17 +1,17 @@
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { federation } from '@module-federation/vite';
+import { cssHashFor, mfeBase } from '../../tools/vite-mfe';
 
+const NAME = 'quizzes';
 const PORT = 3001;
 
 export default defineConfig({
-	// vite's `base` becomes the manifest's publicPath — absolute URL needed so
-	// the host (different origin) can resolve this remote's chunks correctly.
-	base: `http://localhost:${PORT}/`,
+	...mfeBase(NAME, PORT),
 	plugins: [
-		svelte(),
+		svelte({ compilerOptions: { cssHash: cssHashFor(NAME) } }),
 		federation({
-			name: 'quizzes',
+			name: NAME,
 			filename: 'remoteEntry.js',
 			exposes: {
 				'./App': './src/App.ts'
@@ -24,17 +24,5 @@ export default defineConfig({
 			manifest: true,
 			dts: true
 		})
-	],
-	server: {
-		port: PORT,
-		strictPort: true,
-		cors: true,
-		origin: `http://localhost:${PORT}`
-	},
-	preview: { port: PORT, strictPort: true },
-	build: {
-		target: 'esnext',
-		modulePreload: false,
-		cssCodeSplit: false
-	}
+	]
 });
