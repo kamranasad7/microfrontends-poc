@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
-import * as Auth from 'header/Service';
-import type { AuthState } from 'header/Service';
+import * as Auth from 'auth/Service';
+import type { AuthState } from 'auth/Service';
+import * as Header from 'header/Service';
 import type { SettingsData, SettingsProps } from './App';
 import './Settings.css';
 
 export default function Settings({ onSave }: SettingsProps) {
-	// Federated import — `Auth` here is the *same module instance* used by the
-	// header MFE (federation runtime + browser ES-module caching dedupe to a
-	// single instance). Subscribing here reacts to logout() triggered from the
-	// Svelte header (and vice versa). Pure-TS service module → no framework
-	// runtime crosses the federation boundary.
+	// Federated imports — `Auth` and `Header` are the SAME module instances
+	// used by every other MFE (federation runtime + browser ESM caching
+	// dedupe to a single instance per module). Subscribing here reacts to
+	// auth events fired from the Svelte header or Vue auth screen.
 	const [authState, setAuthState] = useState<AuthState>(Auth.getAuthState());
 	useEffect(() => Auth.onAuthChange(setAuthState), []);
 
@@ -19,6 +19,7 @@ export default function Settings({ onSave }: SettingsProps) {
 
 	const handleSave = () => {
 		onSave?.({ theme, language, notifications });
+		Header.addNotification(`Settings saved (${theme} / ${language})`);
 	};
 
 	return (

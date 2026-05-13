@@ -16,9 +16,15 @@ export default defineConfig({
 			exposes: {
 				'./App': './src/App.tsx'
 			},
-			// settings consumes header/Service — see README "Known limitations"
-			// for why this nested-remote declaration costs us hover-preload.
+			// settings consumes auth/Service (auth state) and header/Service
+			// (push notifications on save) — see README "Known limitations"
+			// for why these nested remotes cost us hover-preload.
 			remotes: {
+				auth: {
+					type: 'module',
+					name: 'auth',
+					entry: `${mfeUrl('auth', 3005)}/mf-manifest.json`
+				},
 				header: {
 					type: 'module',
 					name: 'header',

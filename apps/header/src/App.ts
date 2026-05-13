@@ -4,7 +4,6 @@ import Header from './Header.svelte';
 export interface HeaderProps {
 	appName: string;
 	accentColor?: string;
-	notificationCount?: number;
 }
 
 export function render(target: HTMLElement, props: HeaderProps): () => void {

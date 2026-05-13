@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import * as Auth from 'header/Service';
-import type { AuthState } from 'header/Service';
+import * as Auth from './Service';
+import type { AuthState } from './Service';
 
 defineProps<{
 	onAuthenticated?: (user: { name: string; email: string }) => void;
@@ -67,8 +67,8 @@ async function handleSubmit() {
 			<h1>Sign in</h1>
 			<p>
 				Rendered by the Vue <code>auth</code> MFE, federated into the SvelteKit host.
-				It writes to the same <code>header/Service</code> module that the Svelte header
-				and React settings consume.
+				It owns <code>auth/Service</code> — the same auth state instance the Svelte
+				header and React settings read from.
 			</p>
 		</header>
 

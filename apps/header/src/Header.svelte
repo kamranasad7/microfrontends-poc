@@ -1,23 +1,38 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { HeaderProps } from './App';
-	import * as Auth from './Service';
+	import * as Auth from 'auth/Service';
+	import * as Notifications from './Service';
 
-	let {
-		appName,
-		accentColor = '#0f172a',
-		notificationCount = 3
-	}: HeaderProps = $props();
+	let { appName, accentColor = '#0f172a' }: HeaderProps = $props();
 
 	let menuOpen = $state(false);
-	// Drive the visible user from the auth service so cross-framework callers
-	// (settings calling Auth.logout()) flip the header instantly.
-	let authState = $state(Auth.getAuthState());
+	let notifOpen = $state(false);
 
-	onMount(() => Auth.onAuthChange((s) => (authState = s)));
+	// Drive the visible user from auth/Service so cross-framework callers
+	// (settings calling Auth.logout(), Vue auth screen calling Auth.login())
+	// flip the header instantly.
+	let authState = $state(Auth.getAuthState());
+	let notifs = $state(Notifications.getNotifications());
+
+	onMount(() => {
+		const u1 = Auth.onAuthChange((s) => (authState = s));
+		const u2 = Notifications.onNotificationsChange((n) => (notifs = n));
+		return () => {
+			u1();
+			u2();
+		};
+	});
+
+	let unread = $derived(notifs.reduce((n, x) => n + (x.read ? 0 : 1), 0));
 
 	function toggleMenu() {
 		menuOpen = !menuOpen;
+	}
+
+	function toggleNotif() {
+		notifOpen = !notifOpen;
+		if (notifOpen && unread > 0) Notifications.markAllRead();
 	}
 
 	function handleLogout() {
@@ -38,12 +53,26 @@
 	</div>
 	<div class="right">
 		{#if authState.isAuthenticated && authState.user}
-			<button class="bell" aria-label="Notifications">
+			<button class="bell" aria-label="Notifications" onclick={toggleNotif}>
 				🔔
-				{#if notificationCount > 0}
-					<span class="badge">{notificationCount}</span>
+				{#if unread > 0}
+					<span class="badge">{unread}</span>
 				{/if}
 			</button>
+			{#if notifOpen}
+				<div class="notif-menu" role="dialog">
+					{#if notifs.length === 0}
+						<div class="empty">No notifications</div>
+					{:else}
+						{#each notifs.slice(0, 8) as n (n.id)}
+							<div class="notif">
+								<div class="notif-text">{n.text}</div>
+								<button type="button" class="dismiss" aria-label="Dismiss" onclick={() => Notifications.dismissNotification(n.id)}>×</button>
+							</div>
+						{/each}
+					{/if}
+				</div>
+			{/if}
 			<button class="user" onclick={toggleMenu}>
 				<span class="avatar" style="background: {authState.user.avatarColor ?? '#7c3aed'}">
 					{authState.user.name.charAt(0).toUpperCase()}
@@ -171,5 +200,51 @@
 	}
 	.menu button:hover {
 		background: #f1f5f9;
+	}
+	.notif-menu {
+		position: absolute;
+		top: calc(100% + 6px);
+		right: 80px;
+		background: white;
+		color: #0f172a;
+		border-radius: 8px;
+		box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+		min-width: 260px;
+		max-width: 320px;
+		padding: 6px;
+		z-index: 10;
+	}
+	.empty {
+		padding: 14px;
+		color: #64748b;
+		font-size: 13px;
+		text-align: center;
+	}
+	.notif {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 10px;
+		border-radius: 6px;
+	}
+	.notif:hover {
+		background: #f1f5f9;
+	}
+	.notif-text {
+		flex: 1;
+		font-size: 13px;
+		color: #0f172a;
+	}
+	.dismiss {
+		width: 22px;
+		height: 22px;
+		border-radius: 6px;
+		color: #94a3b8;
+		font-size: 18px;
+		line-height: 1;
+	}
+	.dismiss:hover {
+		background: #e2e8f0;
+		color: #0f172a;
 	}
 </style>

@@ -10,8 +10,7 @@
 
 	const headerProps: HeaderProps = {
 		appName: 'JuiceMind Quizzes',
-		accentColor: '#0f172a',
-		notificationCount: 3
+		accentColor: '#0f172a'
 	};
 
 	const links = [

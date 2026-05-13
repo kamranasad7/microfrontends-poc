@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { federation } from '@module-federation/vite';
-import { mfeBase, mfeUrl } from '../../tools/vite-mfe';
+import { mfeBase } from '../../tools/vite-mfe';
 
 const NAME = 'auth';
 const PORT = 3005;
@@ -14,16 +14,8 @@ export default defineConfig({
 			name: NAME,
 			filename: 'remoteEntry.js',
 			exposes: {
-				'./App': './src/App.ts'
-			},
-			// auth consumes header/Service to call Auth.login() — same nested-remote
-			// shape as settings, same hover-preload trade-off (see README).
-			remotes: {
-				header: {
-					type: 'module',
-					name: 'header',
-					entry: `${mfeUrl('header', 3003)}/mf-manifest.json`
-				}
+				'./App': './src/App.ts',
+				'./Service': './src/Service.ts'
 			},
 			shared: {},
 			manifest: true,

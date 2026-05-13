@@ -1,57 +1,67 @@
-// Auth service module exposed by the header MFE.
+// Notifications service module exposed by the header MFE.
 //
-// Federation dedupes exposed modules across consumers — every host or remote
-// that does `import('header/Service')` resolves to the SAME module instance
-// through MF's runtime. The state below is shared across the host, the
-// header MFE itself, and any other remote that imports it. No `shared:`
-// config needed; that's only for runtime deps like svelte/react.
+// Federation dedupes exposed modules: every host or remote that does
+// `import('header/Service')` resolves to the SAME module instance. The state
+// below is the single notification log shared across all MFEs. Any remote
+// can push a notification via `addNotification(text)`; the header's bell
+// badge picks it up reactively through `onNotificationsChange`.
 //
-// Pure TypeScript, no DOM, no framework — so React and Svelte consumers
-// can use it interchangeably without dragging a framework runtime through
-// the federation boundary.
+// Pure TypeScript, no DOM, no framework — Svelte, React, and Vue consumers
+// can all use it interchangeably.
 
-export interface AuthUser {
-	name: string;
-	email: string;
-	avatarColor?: string;
+export interface Notification {
+	id: string;
+	text: string;
+	ts: number;
+	read: boolean;
 }
 
-export interface AuthState {
-	isAuthenticated: boolean;
-	user: AuthUser | null;
-}
-
-const DEFAULT_USER: AuthUser = {
-	name: 'Kamran',
-	email: 'kamran@juicemind.app',
-	avatarColor: '#7c3aed'
-};
-
-let state: AuthState = { isAuthenticated: true, user: DEFAULT_USER };
-const listeners = new Set<(s: AuthState) => void>();
+let notifications: Notification[] = [
+	{ id: 'seed-1', text: 'Welcome back!', ts: Date.now() - 60_000, read: false },
+	{ id: 'seed-2', text: '3 new quizzes graded', ts: Date.now() - 30_000, read: false },
+	{ id: 'seed-3', text: 'New student enrolled in Algebra II', ts: Date.now() - 10_000, read: false }
+];
+const listeners = new Set<(n: Notification[]) => void>();
 
 function emit() {
-	for (const l of listeners) l(state);
+	for (const l of listeners) l(notifications);
 }
 
-export function getAuthState(): AuthState {
-	return state;
+function uid(): string {
+	// crypto.randomUUID is available in modern browsers; falls back gracefully.
+	if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
+	return `n-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function logout(): void {
-	if (!state.isAuthenticated) return;
-	state = { isAuthenticated: false, user: null };
+export function getNotifications(): Notification[] {
+	return notifications;
+}
+
+export function getUnreadCount(): number {
+	return notifications.reduce((n, x) => n + (x.read ? 0 : 1), 0);
+}
+
+export function addNotification(text: string): Notification {
+	const n: Notification = { id: uid(), text, ts: Date.now(), read: false };
+	notifications = [n, ...notifications].slice(0, 20);
 	emit();
-	// Real app: fetch('/api/logout', { method: 'POST' })
+	return n;
 }
 
-export function login(user: AuthUser = DEFAULT_USER): void {
-	if (state.isAuthenticated) return;
-	state = { isAuthenticated: true, user };
+export function dismissNotification(id: string): void {
+	const next = notifications.filter((n) => n.id !== id);
+	if (next.length === notifications.length) return;
+	notifications = next;
 	emit();
 }
 
-export function onAuthChange(cb: (s: AuthState) => void): () => void {
+export function markAllRead(): void {
+	if (notifications.every((n) => n.read)) return;
+	notifications = notifications.map((n) => (n.read ? n : { ...n, read: true }));
+	emit();
+}
+
+export function onNotificationsChange(cb: (n: Notification[]) => void): () => void {
 	listeners.add(cb);
 	return () => {
 		listeners.delete(cb);

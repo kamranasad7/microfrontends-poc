@@ -39,7 +39,12 @@ The header lives in `+layout.svelte`, so it mounts once and persists across navi
 
 ## Cross-MFE service modules
 
-`apps/header` exposes a second module — `./Service` — a pure-TS auth state file with `logout()`, `login()`, `onAuthChange(cb)`. The settings MFE (React) and the auth MFE (Vue) both import `header/Service` and subscribe. Signing in from the Vue login screen flips the Svelte header avatar **and** updates the React settings panel instantly; signing out from settings flips Vue's screen back to the form. Federation dedupes — all three consumers get the same module instance.
+Two service modules live in this POC, each owned by the MFE whose domain they belong to:
+
+- **`auth/Service`** — exposed by the Vue auth MFE. Pure-TS auth state: `getAuthState()`, `login(user?)`, `logout()`, `onAuthChange(cb)`. Consumed by the Svelte header (for the Sign-in / Log-out buttons) and the React settings panel (for the account card + Sign out).
+- **`header/Service`** — exposed by the Svelte header MFE. Notifications: `getNotifications()`, `addNotification(text)`, `dismissNotification(id)`, `markAllRead()`, `onNotificationsChange(cb)`. The header's bell badge reads from it; React settings's Save button pushes into it.
+
+Signing in from the Vue login screen flips the Svelte header avatar **and** updates the React settings account card instantly; clicking Save in React settings increments the Svelte header's notification badge. Federation dedupes each module to one instance — Svelte, React, and Vue consumers all see the same state object.
 
 This is the pattern for any cross-cutting concern (auth, analytics, feature flags, i18n): the owning MFE exposes a service module alongside its UI exposes; consumers stay framework-agnostic.
 

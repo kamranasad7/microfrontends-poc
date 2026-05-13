@@ -13,7 +13,10 @@
 		"isolatedModules": true,
 		"verbatimModuleSyntax": true,
 		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true
+		"forceConsistentCasingInFileNames": true,
+		"paths": {
+			"auth/*": ["./@mf-types/auth/*"]
+		}
 	},
 	"include": ["src", "vite.config.ts"]
 }
