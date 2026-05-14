@@ -1,16 +1,33 @@
 # JuiceMind Microfrontend POC — `sveltekit-host`
 
-SvelteKit host consuming federated **Svelte**, **React**, and **Vue** microfrontends via Module Federation 2.0. Single render-function contract, framework-agnostic at the integration boundary.
+SvelteKit host consuming federated **Svelte**, **React**, and **Vue** microfrontends, each calling its own independent **microservice** (Hono, Fastify, Express) over **oRPC**. Single render-function contract on the UI side, single JWT contract on the wire — both framework-agnostic.
+
+## Module vocabulary
+
+Every module in the repo is tagged by **type**. Domains (e.g. "auth") are a logical grouping; modules in a domain talk to each other through clearly-defined contracts.
+
+| Tag | Where it lives | Example | Role |
+|---|---|---|---|
+| `microfrontend` | `apps/<name>/` | `apps/auth` (Vue) | Federated UI bundle. Renders something. |
+| `store` | inside an MFE package, exposed via federation | `apps/auth/src/Service.ts` (exposed as `auth/Service`) | Plain-TS shared-state module — getters/mutators/subscribers. Same role as Pinia/Zustand, framework-agnostic, deduplicated to one instance across all MFEs by federation. |
+| `microservice` | `services/<name>/` | `services/auth` (Hono + oRPC) | Independent HTTP server. Source of truth. Deploys independently. |
+| `host` | `apps/host/` | `apps/host` | SvelteKit shell. Loads MFEs via federation; no business logic. |
+
+A `store` physically ships inside its owning MFE bundle today, but it's a distinct **logical** module — a different team could own it, and it could be lifted into its own package later without changing its consumers.
 
 ## Stack
 
 - **Host** — SvelteKit 2.57 + Svelte 5.55 + Vite 8 + adapter-node 5.5
-- **Remotes** — `@module-federation/vite` 1.15
+- **Microfrontends** — `@module-federation/vite` 1.15
   - `apps/header` — Svelte 5 — `:3003`
   - `apps/quizzes` — Svelte 5 — `:3001`
   - `apps/students` — Svelte 5 — `:3002`
   - `apps/settings` — React 19 — `:3004`
   - `apps/auth` — Vue 3.5 — `:3005`
+- **Microservices** — oRPC 1.14 + Zod 4 + HS256 JWT (`jose`)
+  - `services/auth` — Hono — `:4001`
+  - `services/quizzes` — Fastify — `:4002`
+  - `services/students` — Express — `:4003`
 - pnpm workspaces
 
 ## The contract
@@ -26,31 +43,74 @@ That's it. Cleanup on unmount. The host's adapter (`SvelteMFE.svelte` / `ReactMF
 ## Architecture
 
 ```
+Browser                                                Node services
+─────────────────────────────────────────────────      ─────────────────────────────
 SvelteKit host (:5173)
-├── layout            <SvelteMFE load=header>          → header   (:3003)
-├── /                 home blurb (SK-native)
-├── /quizzes          <SvelteMFE load=quizzes>         → quizzes  (:3001)
-├── /students         <SvelteMFE load=students>        → students (:3002)
-├── /settings         <ReactMFE  load=settings>        → settings (:3004)
-└── /auth             <VueMFE    load=auth>            → auth     (:3005)
+├── layout    <SvelteMFE load=header>   → header   (:3003) ─┐
+├── /         home blurb (SK-native)                        │
+├── /quizzes  <SvelteMFE load=quizzes>  → quizzes  (:3001) ─┼─→ services/quizzes  (:4002, Fastify + oRPC)
+├── /students <SvelteMFE load=students> → students (:3002) ─┼─→ services/students (:4003, Express + oRPC)
+├── /settings <ReactMFE  load=settings> → settings (:3004) ─┤
+└── /auth     <VueMFE    load=auth>     → auth     (:3005) ─┴─→ services/auth     (:4001, Hono + oRPC)
+
+   federation runtime + render-function contract       ←  oRPC clients use JWT from auth-store  →
 ```
 
-The header lives in `+layout.svelte`, so it mounts once and persists across navigation (verified — same DOM node survives route changes).
+The header lives in `+layout.svelte`, so it mounts once and persists across navigation. The federated `auth/Service` store holds the JWT in memory + sessionStorage; every MFE's oRPC client pulls the token from there via `getToken()`, so login from the Vue screen authorizes the Svelte quizzes MFE's next fetch automatically.
 
-## Cross-MFE service modules
+## Cross-MFE stores
 
-Two service modules live in this POC, each owned by the MFE whose domain they belong to:
+Stores are federated, framework-agnostic modules that the MFEs subscribe to for shared state:
 
-- **`auth/Service`** — exposed by the Vue auth MFE. Pure-TS auth state: `getAuthState()`, `login(user?)`, `logout()`, `onAuthChange(cb)`. Consumed by the Svelte header (for the Sign-in / Log-out buttons) and the React settings panel (for the account card + Sign out).
-- **`header/Service`** — exposed by the Svelte header MFE. Notifications: `getNotifications()`, `addNotification(text)`, `dismissNotification(id)`, `markAllRead()`, `onNotificationsChange(cb)`. The header's bell badge reads from it; React settings's Save button pushes into it.
+- **`auth/Service`** — owned by the Vue auth MFE. Wraps `services/auth` (oRPC). API: `getAuthState()`, `login(email, password)`, `logout()`, `getToken()`, `onAuthChange(cb)`. Consumed by the Svelte header (Sign-in / Log-out), React settings (account card), and every other MFE's oRPC client (for the `Authorization` header).
+- **`header/Service`** — owned by the Svelte header MFE. In-memory notifications: `getNotifications()`, `addNotification(text)`, `dismissNotification(id)`, `markAllRead()`, `onNotificationsChange(cb)`. React settings's Save button pushes a notification; the header bell badge reads the count. Local-only for now; not yet wired to a notifications-microservice.
 
-Signing in from the Vue login screen flips the Svelte header avatar **and** updates the React settings account card instantly; clicking Save in React settings increments the Svelte header's notification badge. Federation dedupes each module to one instance — Svelte, React, and Vue consumers all see the same state object.
+Signing in from Vue posts to `services/auth`, the JWT lands in `auth-store`, and the Svelte header + React settings rerender from the federated state change. The Svelte quizzes and students MFEs then use the same token (via `getToken()`) for their next backend call.
 
-This is the pattern for any cross-cutting concern (auth, analytics, feature flags, i18n): the owning MFE exposes a service module alongside its UI exposes; consumers stay framework-agnostic.
+This is the pattern for any cross-cutting concern (auth, analytics, feature flags, i18n): the owning MFE exposes a store alongside its UI; consumers stay framework-agnostic.
+
+## Services (oRPC backends)
+
+Three independent HTTP servers, each on its own port and in its own server framework, all sharing the same JWT secret so any service can validate a token issued by `services/auth`.
+
+| Service | Port | Framework | oRPC procedures | Auth |
+|---|---|---|---|---|
+| `services/auth` | 4001 | **Hono** + `@hono/node-server` | `login`, `logout`, `me` | `login` public; others Bearer |
+| `services/quizzes` | 4002 | **Fastify** | `list`, `get` | Bearer |
+| `services/students` | 4003 | **Express** | `list` | Bearer |
+
+Each service:
+
+- Defines its router in `src/router.ts` and exports `AppRouter` as a TypeScript type.
+- Validates inputs/outputs with Zod schemas in `src/schemas.ts`.
+- Verifies JWTs with `jose` against the shared `JWT_SECRET` env var (dev default in `tools/service-env.ts`).
+- Mounts CORS via env-driven `ALLOWED_ORIGINS` (defaults: SvelteKit host + the primary MFE's standalone dev origin).
+
+MFEs consume each service through a tiny oRPC client (`apps/<name>/src/api.ts` or `rpc-client.ts`). The client imports the `AppRouter` type from the corresponding `services-<name>` workspace package (type-only — never bundled at runtime) and pulls the token from `auth-store`:
+
+```ts
+// apps/quizzes/src/api.ts (simplified)
+import { createORPCClient } from '@orpc/client';
+import { RPCLink } from '@orpc/client/fetch';
+import type { AppRouter } from 'services-quizzes/router';
+import { getToken } from 'auth/Service';
+
+const link = new RPCLink({
+  url: `${import.meta.env.VITE_QUIZZES_API_URL ?? 'http://localhost:4002'}/rpc`,
+  headers: () => {
+    const t = getToken();
+    return t ? { Authorization: `Bearer ${t}` } : {};
+  }
+});
+
+export const client = createORPCClient<AppRouter>(link);
+```
+
+End-to-end types: changing a procedure's Zod output in `services/quizzes/src/schemas.ts` immediately surfaces a type error in `apps/quizzes/src/Page.svelte` on the next typecheck.
 
 ## File layout
 
-Pure monorepo — host and every remote live as siblings under `apps/*`. The repo root is a thin workspace shell.
+Pure monorepo — `apps/*` for microfrontends + host, `services/*` for microservices. Shared helpers in `tools/`.
 
 ```
 microfrontend-poc/
@@ -70,13 +130,22 @@ microfrontend-poc/
 │   │   ├── vite.config.ts                     host federation config
 │   │   ├── svelte.config.js                   SK config (adapter-node)
 │   │   └── package.json
-│   ├── header/                       Svelte remote (UI + Service)
-│   ├── quizzes/                      Svelte remote
-│   ├── students/                     Svelte remote
-│   ├── settings/                     React remote
-│   └── auth/                         Vue remote (login screen)
+│   ├── header/                       Svelte microfrontend (+ notifications store)
+│   ├── quizzes/                      Svelte microfrontend
+│   ├── students/                     Svelte microfrontend
+│   ├── settings/                     React microfrontend
+│   └── auth/                         Vue microfrontend (+ auth store)
+├── services/
+│   ├── auth/                         Hono + oRPC
+│   │   └── src/{index,router,schemas,jwt,users}.ts
+│   ├── quizzes/                      Fastify + oRPC
+│   └── students/                     Express + oRPC
+├── tools/
+│   ├── vite-mfe.ts                   mfeBase / mfeUrl / cssHashFor helpers
+│   ├── service-env.ts                serviceUrl / allowedOrigins / jwtSecret
+│   └── package.json                  type: module marker for ESM imports
 ├── package.json                      workspace root — orchestration scripts only
-├── pnpm-workspace.yaml               packages: [apps/*]
+├── pnpm-workspace.yaml               packages: [apps/*, services/*]
 └── README.md
 ```
 
@@ -84,10 +153,12 @@ microfrontend-poc/
 
 ```
 pnpm install
-pnpm dev:all          # all 6 dev servers in one terminal, prefixed output
+pnpm dev:all          # all 9 dev servers in one terminal, prefixed output
 ```
 
-Or individually: `pnpm dev` (host on `:5173`), `pnpm --filter <name> dev` per app.
+That's 1 host + 5 MFEs + 3 microservices. Or individually: `pnpm dev:host` (host on `:5173`), `pnpm --filter <name> dev` per app or service.
+
+If anything stalls during initial cold start, kick the dependent processes in this order: services first (so they can publish types), then MFEs (so the host can pull `@mf-types`), then the host.
 
 ## Build & run prod
 
@@ -103,7 +174,7 @@ Each remote emits `dist/{mf-manifest.json, remoteEntry.js, @mf-types.zip}` — t
 
 Quizzes / students / header routes' `+page.ts` each `await import('<remote>/App')` inside `load()`. SK runs `load()` on link hover, the dynamic import warms the browser cache, click finds the module already settled — no fallback flash.
 
-Settings's and auth's `+page.ts` are intentionally `ssr=false` only, no `load()`. Both declare a nested remote in their `mf-manifest.json` (header — the Service consumer), and the federation runtime can't reconcile that nested-remote handshake inside SK's hover-preload window. Click navigation still works because the page lifecycle gives the handshake more time — just no instant-feel hover-preload for `/settings` or `/auth`.
+Quizzes, students, settings, and auth all declare nested federation remotes (every MFE that talks to a microservice needs `auth` as a nested remote to grab the JWT from `auth-store`). With nested remotes the federation runtime can't reconcile its handshake inside SK's hover-preload window, so those four routes' `+page.ts` are intentionally `ssr=false` only, no `load()`. Click navigation still works because the page lifecycle gives the handshake more time — just no instant-feel hover-preload. Only the layout-mounted `header` MFE escapes this trade-off.
 
 ## CSS strategy — federated
 
@@ -145,11 +216,17 @@ Hit during this POC; documented so the next person doesn't have to.
 
 ## Known limitations / deferred work
 
-Documented and non-blocking — POC is functional production-built end-to-end without resolving these. Roughly by priority:
+Documented and non-blocking. Roughly by priority:
 
-- **Singleton svelte sharing is disabled in production.** With `shared: { svelte: { singleton: true } }` set, the prod bundle throws `TypeError: Cannot read properties of undefined (reading '__esModule')` at startup — looks like an init-order bug in `@module-federation/vite`. Disabling sharing makes each Svelte remote ship its own runtime (~30–50 KB raw / ~10–15 KB gzipped extra per remote). Dev DX is unaffected. **Optimization, not a correctness issue** — federation, the render contract, and the cross-MFE service module all work without sharing. Worth chasing later for the bundle-size savings.
+- **In-memory backends.** Every microservice keeps state in module-level variables. Restart wipes data. Demonstrates the federation + auth flow without DB plumbing. Real fix: SQLite + Drizzle per service, or shared Postgres.
 
-- **Remote URLs hardcoded to `localhost:300X`.** Each `apps/*/vite.config.ts` sets `base: 'http://localhost:300X/'` (so the production manifest's `publicPath` is absolute — required for cross-origin asset resolution). The host's `vite.config.ts` `remotes:` block has the same URLs. For real deploys all of these need to come from env vars.
+- **Single 1 h JWT, no refresh.** Token in `sessionStorage`. Real fix: refresh tokens + HttpOnly cookies via a BFF on the host (we deliberately picked direct browser → service for this POC).
+
+- **`header/Service` notifications are still in-memory in the browser** — there is no `services/notifications` yet. The bell + dropdown work as a local store; a notifications-microservice would be the next iteration.
+
+- **CORS is permissive in dev.** Each service allows `localhost:5173` + its primary MFE's standalone origin. Prod allowlists drive from `ALLOWED_ORIGINS` env.
+
+- **Singleton svelte sharing is disabled in production.** With `shared: { svelte: { singleton: true } }` set, the prod bundle throws `TypeError: Cannot read properties of undefined (reading '__esModule')` at startup — looks like an init-order bug in `@module-federation/vite`. Disabling sharing makes each Svelte remote ship its own runtime (~30–50 KB raw / ~10–15 KB gzipped extra per remote). Dev DX is unaffected.
 
 - **No error boundary around `mod.render()`.** A remote that throws during render takes down the host shell. ~10 lines of try/catch + fallback in each adapter.
 

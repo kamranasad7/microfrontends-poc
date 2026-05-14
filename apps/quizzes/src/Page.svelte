@@ -1,10 +1,14 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { client } from './api';
+	import { getAuthState, onAuthChange } from 'auth/Service';
+
 	interface Quiz {
-		id: number;
+		id: string;
 		title: string;
-		topic: string;
-		questions: number;
-		durationMin: number;
+		subject: string;
+		questionCount: number;
+		updatedAt: string;
 	}
 
 	interface Props {
@@ -13,34 +17,74 @@
 
 	let { greeting = '' }: Props = $props();
 
-	const quizzes: Quiz[] = [
-		{ id: 1, title: 'Quiz 1', topic: 'Algebra Basics', questions: 12, durationMin: 15 },
-		{ id: 2, title: 'Quiz 2', topic: 'World Geography', questions: 20, durationMin: 25 },
-		{ id: 3, title: 'Quiz 3', topic: 'JavaScript Fundamentals', questions: 15, durationMin: 20 },
-		{ id: 4, title: 'Quiz 4', topic: 'Biology 101', questions: 10, durationMin: 12 },
-		{ id: 5, title: 'Quiz 5', topic: 'Modern History', questions: 18, durationMin: 22 },
-		{ id: 6, title: 'Quiz 6', topic: 'Chemistry Essentials', questions: 14, durationMin: 18 }
-	];
+	let quizzes = $state<Quiz[]>([]);
+	let loading = $state(false);
+	let error = $state<string | null>(null);
+	let authed = $state(getAuthState().isAuthenticated);
+
+	async function fetchQuizzes() {
+		loading = true;
+		error = null;
+		try {
+			quizzes = await client.list();
+		} catch (e) {
+			error = e instanceof Error ? e.message : 'Failed to load quizzes';
+		} finally {
+			loading = false;
+		}
+	}
+
+	onMount(() => {
+		if (authed) fetchQuizzes();
+		return onAuthChange((s) => {
+			authed = s.isAuthenticated;
+			if (s.isAuthenticated) fetchQuizzes();
+			else quizzes = [];
+		});
+	});
+
+	function formatDate(iso: string): string {
+		try {
+			return new Date(iso).toLocaleDateString();
+		} catch {
+			return iso;
+		}
+	}
 </script>
 
 <section>
 	<h1>{greeting} Quizzes MFE</h1>
-	<p>Federated <code>quizzes</code> remote, mounted in the SvelteKit host.</p>
+	<p>
+		Federated <code>quizzes</code> remote, calling its own
+		<code>quizzes-microservice</code> (Fastify + oRPC) for the data below.
+	</p>
 
-	<div class="grid">
-		{#each quizzes as quiz (quiz.id)}
-			<article>
-				<div class="badge">Q{quiz.id}</div>
-				<h3>{quiz.title}</h3>
-				<div class="topic">{quiz.topic}</div>
-				<div class="meta">
-					<span>{quiz.questions} questions</span>
-					<span class="dot">•</span>
-					<span>{quiz.durationMin} min</span>
-				</div>
-			</article>
-		{/each}
-	</div>
+	{#if !authed}
+		<div class="empty">
+			<p>You need to <a href="/auth">sign in</a> to view quizzes.</p>
+		</div>
+	{:else if loading && quizzes.length === 0}
+		<div class="empty">Loading quizzes…</div>
+	{:else if error}
+		<div class="empty error">Error: {error}</div>
+	{:else if quizzes.length === 0}
+		<div class="empty">No quizzes yet.</div>
+	{:else}
+		<div class="grid">
+			{#each quizzes as quiz (quiz.id)}
+				<article>
+					<div class="badge">{quiz.subject.charAt(0)}</div>
+					<h3>{quiz.title}</h3>
+					<div class="topic">{quiz.subject}</div>
+					<div class="meta">
+						<span>{quiz.questionCount} questions</span>
+						<span class="dot">•</span>
+						<span>updated {formatDate(quiz.updatedAt)}</span>
+					</div>
+				</article>
+			{/each}
+		</div>
+	{/if}
 </section>
 
 <style>
@@ -54,6 +98,10 @@
 	}
 	p {
 		color: #475569;
+	}
+	a {
+		color: #2563eb;
+		font-weight: 600;
 	}
 	.grid {
 		margin-top: 24px;
@@ -100,5 +148,19 @@
 	}
 	.dot {
 		color: #cbd5e1;
+	}
+	.empty {
+		margin-top: 24px;
+		padding: 24px;
+		background: white;
+		border: 1px solid #e2e8f0;
+		border-radius: 10px;
+		color: #64748b;
+		text-align: center;
+	}
+	.empty.error {
+		color: #b91c1c;
+		border-color: #fecaca;
+		background: #fef2f2;
 	}
 </style>

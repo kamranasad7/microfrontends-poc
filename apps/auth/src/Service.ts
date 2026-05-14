@@ -1,14 +1,15 @@
-// Auth service module exposed by the auth MFE.
+// auth-store: federated state module owning auth state + JWT.
 //
 // Federation dedupes exposed modules: every host or remote that does
-// `import('auth/Service')` resolves to the SAME module instance through MF's
-// runtime. The state below is shared across the host, the auth MFE itself,
-// and any other remote that imports it (header for Sign-in/Log-out, settings
-// for the account card). No `shared:` config needed; that's only for runtime
-// deps like svelte/react/vue.
+// `import('auth/Service')` resolves to the SAME instance. The token + user
+// state are shared across the Svelte header, React settings, and the auth
+// MFE itself.
 //
-// Pure TypeScript, no DOM, no framework — Svelte, React, and Vue consumers
-// can all use it interchangeably.
+// The wire calls go through ./rpc-client (oRPC, typed against
+// services-auth's router). This file owns local cache + pub/sub +
+// sessionStorage persistence; the rpc-client owns transport.
+
+import { client, setToken as setRpcToken } from './rpc-client';
 
 export interface AuthUser {
 	name: string;
@@ -21,34 +22,72 @@ export interface AuthState {
 	user: AuthUser | null;
 }
 
-const DEFAULT_USER: AuthUser = {
-	name: 'Kamran',
-	email: 'kamran@juicemind.app',
-	avatarColor: '#7c3aed'
-};
+const TOKEN_KEY = 'auth.token';
 
-let state: AuthState = { isAuthenticated: true, user: DEFAULT_USER };
+let state: AuthState = { isAuthenticated: false, user: null };
+let token: string | null = null;
 const listeners = new Set<(s: AuthState) => void>();
 
 function emit() {
 	for (const l of listeners) l(state);
 }
 
+function applySession(nextToken: string, user: AuthUser) {
+	token = nextToken;
+	setRpcToken(nextToken);
+	state = { isAuthenticated: true, user };
+	if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(TOKEN_KEY, nextToken);
+	emit();
+}
+
+function clearSession() {
+	token = null;
+	setRpcToken(null);
+	state = { isAuthenticated: false, user: null };
+	if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem(TOKEN_KEY);
+	emit();
+}
+
+// Hydrate from sessionStorage on first import. Validates the token with the
+// server; clears on 401. Runs once per module instance — federation makes
+// that "once per page" across every MFE.
+if (typeof sessionStorage !== 'undefined') {
+	const stored = sessionStorage.getItem(TOKEN_KEY);
+	if (stored) {
+		token = stored;
+		setRpcToken(stored);
+		client
+			.me()
+			.then(({ user }) => {
+				state = { isAuthenticated: true, user };
+				emit();
+			})
+			.catch(() => {
+				clearSession();
+			});
+	}
+}
+
 export function getAuthState(): AuthState {
 	return state;
 }
 
-export function logout(): void {
-	if (!state.isAuthenticated) return;
-	state = { isAuthenticated: false, user: null };
-	emit();
-	// Real app: fetch('/api/logout', { method: 'POST' })
+export function getToken(): string | null {
+	return token;
 }
 
-export function login(user: AuthUser = DEFAULT_USER): void {
-	if (state.isAuthenticated) return;
-	state = { isAuthenticated: true, user };
-	emit();
+export async function login(email: string, password: string): Promise<void> {
+	const { user, token: nextToken } = await client.login({ email, password });
+	applySession(nextToken, user);
+}
+
+export async function logout(): Promise<void> {
+	if (token) {
+		// Fire-and-forget; server-side logout is a no-op in this POC but the
+		// call exists so the contract is honest. Local clear runs regardless.
+		client.logout().catch(() => undefined);
+	}
+	clearSession();
 }
 
 export function onAuthChange(cb: (s: AuthState) => void): () => void {

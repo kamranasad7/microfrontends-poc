@@ -26,18 +26,6 @@ const password = ref('');
 const error = ref<string | null>(null);
 const submitting = ref(false);
 
-function nameFromEmail(addr: string): string {
-	const local = addr.split('@')[0] ?? 'User';
-	return local.charAt(0).toUpperCase() + local.slice(1);
-}
-
-function colorFromEmail(addr: string): string {
-	let hash = 0;
-	for (let i = 0; i < addr.length; i++) hash = (hash * 31 + addr.charCodeAt(i)) | 0;
-	const hue = ((hash % 360) + 360) % 360;
-	return `hsl(${hue} 70% 45%)`;
-}
-
 async function handleSubmit() {
 	error.value = null;
 	if (!email.value.includes('@')) {
@@ -49,15 +37,13 @@ async function handleSubmit() {
 		return;
 	}
 	submitting.value = true;
-	// Simulate a network round-trip so the loading state is observable.
-	await new Promise((r) => setTimeout(r, 350));
-	const user = {
-		name: nameFromEmail(email.value),
-		email: email.value,
-		avatarColor: colorFromEmail(email.value)
-	};
-	Auth.login(user);
-	submitting.value = false;
+	try {
+		await Auth.login(email.value, password.value);
+	} catch (e) {
+		error.value = e instanceof Error ? e.message : 'Sign-in failed';
+	} finally {
+		submitting.value = false;
+	}
 }
 </script>
 
@@ -108,7 +94,7 @@ async function handleSubmit() {
 				{{ submitting ? 'Signing in…' : 'Sign in' }}
 			</button>
 			<p class="hint">
-				This is a mock login — no network call. Any email + 4-char password works.
+				Posts to <code>auth-microservice</code> (Hono + oRPC). Any email + 4-char password is accepted.
 			</p>
 		</form>
 	</section>

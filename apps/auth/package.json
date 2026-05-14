@@ -9,11 +9,14 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"@orpc/client": "^1.14.3",
 		"vue": "^3.5.34"
 	},
 	"devDependencies": {
 		"@module-federation/vite": "^1.15.4",
+		"@orpc/server": "^1.14.3",
 		"@vitejs/plugin-vue": "^6.0.6",
+		"services-auth": "workspace:*",
 		"typescript": "^5.9.3",
 		"vite": "^8.0.12",
 		"vue-tsc": "^3.2.8"

@@ -40,8 +40,10 @@
 		Auth.logout();
 	}
 
+	// Header lives in every route's layout, so it can't show the credential
+	// form itself — it just sends the user to /auth to sign in.
 	function handleLogin() {
-		Auth.login();
+		if (typeof window !== 'undefined') window.location.href = '/auth';
 	}
 </script>
 
