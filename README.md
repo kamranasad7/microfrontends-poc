@@ -63,11 +63,49 @@ The header lives in `+layout.svelte`, so it mounts once and persists across navi
 Stores are federated, framework-agnostic modules that the MFEs subscribe to for shared state:
 
 - **`auth/Service`** — owned by the Vue auth MFE. Wraps `services/auth` (oRPC). API: `getAuthState()`, `login(email, password)`, `logout()`, `getToken()`, `onAuthChange(cb)`. Consumed by the Svelte header (Sign-in / Log-out), React settings (account card), and every other MFE's oRPC client (for the `Authorization` header).
+- **`settings/SettingsStore`** — owned by the React settings MFE. Theme + language + notifications-enabled flag. Built on **[Nanostores](https://github.com/nanostores/nanostores)** — exports a `settings` atom (`persistentAtom`, auto-synced to `localStorage` under key `settings.v1`) plus `setTheme(t)`, `setLanguage(l)`, `setNotifications(b)` setters. Consumers subscribe through the official framework adapters: `useStore(settings)` from `@nanostores/react` in settings; `$settings.language` (Svelte's native `$store` auto-subscribe — Nanostores atoms implement Svelte's store contract) in the header. A module-level `settings.subscribe(s => document.documentElement.dataset.theme = s.theme)` stamps the theme onto `<html>` so every MFE's CSS uses `var(--bg-page)` / `var(--bg-card)` / `var(--text-primary)` / `var(--text-muted)` / `var(--border)` defined in the host layout's `:root`, and dark mode flips across all MFEs without any per-MFE JS subscription.
 - **`header/Service`** — owned by the Svelte header MFE. In-memory notifications: `getNotifications()`, `addNotification(text)`, `dismissNotification(id)`, `markAllRead()`, `onNotificationsChange(cb)`. React settings's Save button pushes a notification; the header bell badge reads the count. Local-only for now; not yet wired to a notifications-microservice.
 
 Signing in from Vue posts to `services/auth`, the JWT lands in `auth-store`, and the Svelte header + React settings rerender from the federated state change. The Svelte quizzes and students MFEs then use the same token (via `getToken()`) for their next backend call.
 
-This is the pattern for any cross-cutting concern (auth, analytics, feature flags, i18n): the owning MFE exposes a store alongside its UI; consumers stay framework-agnostic.
+Theme reactivity flows two ways: JS subscribers (settings panel, header language badge) react through the Nanostores atom's adapter; CSS surfaces react via the `data-theme` root attribute + cascading `var(--*)` tokens. The second path is why dark mode propagates to MFEs that never imported `settings/SettingsStore` at all (quizzes, students, auth) — their scoped CSS resolves `var(--bg-card)` from `:root`, the host updates `:root`, every panel re-paints.
+
+### Why Nanostores
+
+Surveyed Nanostores, TanStack Store, `@preact/signals-core`, TC39 `signal-polyfill`, Jotai/Zustand vanilla, Effector, Valtio, and RxJS BehaviorSubject. Picked Nanostores because:
+
+- **All three frameworks officially supported** out of the box — `@nanostores/react`, `@nanostores/vue`, and native Svelte (atoms implement Svelte's store contract → no adapter package needed).
+- **Smallest** (294 B core); first-class for cross-framework + microfrontend setups (the docs literally call this out).
+- **Battle-tested** (since 2021), maintained by Andrey Sitnik (PostCSS, Browserslist).
+- **Federation-friendly**: an atom is a plain object, so the federation runtime dedupes it to a single instance per page — same singleton property our hand-rolled stores had.
+- **`@nanostores/persistent`** replaces hand-rolled `localStorage` plumbing.
+
+TanStack Store was the only serious alternative. Fine library, slightly heavier (~3 KB), newer (2024), and the signal model added complexity we didn't need. The other libs failed at least one of the criteria above (React-only, abandoned Vue/Svelte adapters, heavier mental models, or both).
+
+The boilerplate-before/after looks like:
+
+```diff
+// React (settings panel)
+- const [s, setS] = useState(SettingsStore.getSettings());
+- useEffect(() => SettingsStore.onSettingsChange(setS), []);
++ const s = useStore(settings);
+
+// Svelte (header)
+- let settings = $state(Settings.getSettings());
+- onMount(() => Settings.onSettingsChange(s => settings = s));
++ // …in markup, just: {$settings.language}
+
+// store side
+- let state = ...; const listeners = new Set();
+- export const getSettings = () => state;
+- export const onSettingsChange = (cb) => { listeners.add(cb); return () => listeners.delete(cb); };
+- // + manual localStorage read/write/sync
++ export const settings = persistentAtom<SettingsState>('settings.v1', defaults, { encode: JSON.stringify, decode: JSON.parse });
+```
+
+Auth + notifications stores still use the hand-rolled `onChange(cb)` pattern. They'll be migrated to Nanostores in a follow-up pass for consistency — the POC is the org-wide exemplar, so we want all stores on one pattern eventually.
+
+This is the pattern for any cross-cutting concern (auth, theming, analytics, feature flags, i18n): the owning MFE exposes a store alongside its UI; consumers stay framework-agnostic.
 
 ## Services (oRPC backends)
 
@@ -108,6 +146,17 @@ export const client = createORPCClient<AppRouter>(link);
 
 End-to-end types: changing a procedure's Zod output in `services/quizzes/src/schemas.ts` immediately surfaces a type error in `apps/quizzes/src/Page.svelte` on the next typecheck.
 
+### OpenAPI specs
+
+Every service writes its OpenAPI 3.1 spec to its own `openapi.json` (e.g. `services/auth/openapi.json`). Co-located with the service that owns it — the contract lives next to the code that produces it, and `services/auth/` is self-contained. Specs are generated from the same oRPC router + Zod schemas the runtime uses, so the file on disk matches what the server actually serves.
+
+Two ways the spec stays in sync:
+
+1. **Dev** — `tsx watch src/index.ts` calls `writeOpenApiSpec(router, …)` on every restart, so every save regenerates the JSON. No extra command to remember.
+2. **CI / one-shot** — `pnpm generate:openapi` (root) runs each service's `tsx src/generate-openapi.ts` without booting an HTTP server. Wire this into pre-commit or CI to guarantee the committed JSON matches the router.
+
+Helper lives at `tools/openapi-gen.ts` (uses `@orpc/openapi` + `@orpc/zod`); each service's `src/generate-openapi.ts` is a tiny entrypoint that imports the router and calls it with its own `serviceDir`.
+
 ## File layout
 
 Pure monorepo — `apps/*` for microfrontends + host, `services/*` for microservices. Shared helpers in `tools/`.
@@ -137,15 +186,17 @@ microfrontend-poc/
 │   └── auth/                         Vue microfrontend (+ auth store)
 ├── services/
 │   ├── auth/                         Hono + oRPC
-│   │   └── src/{index,router,schemas,jwt,users}.ts
-│   ├── quizzes/                      Fastify + oRPC
-│   └── students/                     Express + oRPC
-├── tools/
+│   │   ├── src/{index,router,schemas,jwt,users,generate-openapi}.ts
+│   │   └── openapi.json              generated OpenAPI 3.1 spec for this service
+│   ├── quizzes/                      Fastify + oRPC (+ openapi.json)
+│   └── students/                     Express + oRPC (+ openapi.json)
+├── tools/                            workspace package (tools-internal)
 │   ├── vite-mfe.ts                   mfeBase / mfeUrl / cssHashFor helpers
 │   ├── service-env.ts                serviceUrl / allowedOrigins / jwtSecret
-│   └── package.json                  type: module marker for ESM imports
+│   ├── openapi-gen.ts                writeOpenApiSpec — emits <serviceDir>/openapi.json
+│   └── package.json                  deps: @orpc/openapi, @orpc/zod
 ├── package.json                      workspace root — orchestration scripts only
-├── pnpm-workspace.yaml               packages: [apps/*, services/*]
+├── pnpm-workspace.yaml               packages: [apps/*, services/*, tools]
 └── README.md
 ```
 

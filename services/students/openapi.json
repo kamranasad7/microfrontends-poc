@@ -1,0 +1,54 @@
+{
+  "info": {
+    "title": "students microservice",
+    "version": "0.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4003/rpc"
+    }
+  ],
+  "openapi": "3.1.1",
+  "paths": {
+    "/list": {
+      "post": {
+        "operationId": "list",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "grade": {
+                        "type": "string"
+                      },
+                      "enrolledAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "grade",
+                      "enrolledAt"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

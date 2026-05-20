@@ -105,11 +105,12 @@ async function handleSubmit() {
 	max-width: 420px;
 	margin: 48px auto;
 	padding: 28px 32px;
-	background: white;
+	background: var(--bg-card);
+	border: 1px solid var(--border);
 	border-radius: 14px;
 	box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
 	font-family: system-ui, sans-serif;
-	color: #0f172a;
+	color: var(--text-primary);
 }
 header h1 {
 	margin: 0 0 6px;
@@ -117,12 +118,12 @@ header h1 {
 }
 header p {
 	margin: 0 0 24px;
-	color: #475569;
+	color: var(--text-muted);
 	font-size: 13px;
 	line-height: 1.55;
 }
 code {
-	background: #f1f5f9;
+	background: var(--bg-muted);
 	padding: 1px 6px;
 	border-radius: 4px;
 	font-size: 12px;
@@ -137,14 +138,16 @@ label {
 	flex-direction: column;
 	gap: 6px;
 	font-size: 13px;
-	color: #334155;
+	color: var(--text-primary);
 }
 input {
 	padding: 9px 12px;
-	border: 1px solid #cbd5e1;
+	border: 1px solid var(--border-strong);
 	border-radius: 8px;
 	font-size: 14px;
 	font-family: inherit;
+	background: var(--bg-card);
+	color: var(--text-primary);
 }
 input:focus {
 	outline: none;
@@ -177,14 +180,15 @@ button[type='submit']:hover:not(:disabled) {
 .hint {
 	margin: 8px 0 0;
 	font-size: 12px;
-	color: #64748b;
+	color: var(--text-muted);
 }
 .signed-in {
 	display: flex;
 	align-items: center;
 	gap: 14px;
 	padding: 16px;
-	background: #f0fdf4;
+	background: var(--bg-muted);
+	border: 1px solid var(--border);
 	border-radius: 10px;
 }
 .avatar {
@@ -208,10 +212,10 @@ button[type='submit']:hover:not(:disabled) {
 }
 .email {
 	font-size: 12px;
-	color: #475569;
+	color: var(--text-muted);
 }
 .secondary {
-	background: white;
+	background: var(--bg-card);
 	color: #16a34a;
 	border: 1px solid #16a34a;
 	padding: 6px 12px;
@@ -221,6 +225,6 @@ button[type='submit']:hover:not(:disabled) {
 	cursor: pointer;
 }
 .secondary:hover {
-	background: #f0fdf4;
+	background: var(--bg-muted);
 }
 </style>

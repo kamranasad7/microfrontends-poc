@@ -9,10 +9,13 @@
 	"scripts": {
 		"dev": "tsx watch src/index.ts",
 		"start": "tsx src/index.ts",
-		"check": "tsc --noEmit"
+		"check": "tsc --noEmit",
+		"generate:openapi": "tsx src/generate-openapi.ts"
 	},
 	"dependencies": {
+		"@orpc/openapi": "^1.14.3",
 		"@orpc/server": "^1.14.3",
+		"@orpc/zod": "^1.14.3",
 		"cors": "^2.8.6",
 		"express": "^5.2.1",
 		"jose": "^6.2.3",

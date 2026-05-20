@@ -51,6 +51,9 @@ importers:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^7.1.1
         version: 7.1.1(svelte@5.55.5)(vite@8.0.11(@types/node@25.7.0)(esbuild@0.27.7)(tsx@4.21.0))
+      nanostores:
+        specifier: ^1.3.0
+        version: 1.3.0
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -118,6 +121,15 @@ importers:
 
   apps/settings:
     dependencies:
+      '@nanostores/persistent':
+        specifier: ^1.3.4
+        version: 1.3.4(nanostores@1.3.0)
+      '@nanostores/react':
+        specifier: ^1.1.0
+        version: 1.1.0(nanostores@1.3.0)(react@19.2.6)
+      nanostores:
+        specifier: ^1.3.0
+        version: 1.3.0
       react:
         specifier: ^19.2.6
         version: 19.2.6
@@ -177,9 +189,15 @@ importers:
       '@hono/node-server':
         specifier: ^2.0.2
         version: 2.0.2(hono@4.12.18)
+      '@orpc/openapi':
+        specifier: ^1.14.3
+        version: 1.14.3(fastify@5.8.5)
       '@orpc/server':
         specifier: ^1.14.3
         version: 1.14.3(fastify@5.8.5)(ws@8.18.0)
+      '@orpc/zod':
+        specifier: ^1.14.3
+        version: 1.14.3(@orpc/contract@1.14.3)(@orpc/server@1.14.3(fastify@5.8.5))(fastify@5.8.5)(zod@4.4.3)
       hono:
         specifier: ^4.12.18
         version: 4.12.18
@@ -205,9 +223,15 @@ importers:
       '@fastify/cors':
         specifier: ^11.2.0
         version: 11.2.0
+      '@orpc/openapi':
+        specifier: ^1.14.3
+        version: 1.14.3(fastify@5.8.5)
       '@orpc/server':
         specifier: ^1.14.3
         version: 1.14.3(fastify@5.8.5)(ws@8.18.0)
+      '@orpc/zod':
+        specifier: ^1.14.3
+        version: 1.14.3(@orpc/contract@1.14.3)(@orpc/server@1.14.3(fastify@5.8.5))(fastify@5.8.5)(zod@4.4.3)
       fastify:
         specifier: ^5.8.5
         version: 5.8.5
@@ -230,9 +254,15 @@ importers:
 
   services/students:
     dependencies:
+      '@orpc/openapi':
+        specifier: ^1.14.3
+        version: 1.14.3(fastify@5.8.5)
       '@orpc/server':
         specifier: ^1.14.3
         version: 1.14.3(fastify@5.8.5)(ws@8.18.0)
+      '@orpc/zod':
+        specifier: ^1.14.3
+        version: 1.14.3(@orpc/contract@1.14.3)(@orpc/server@1.14.3(fastify@5.8.5))(fastify@5.8.5)(zod@4.4.3)
       cors:
         specifier: ^2.8.6
         version: 2.8.6
@@ -261,6 +291,18 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  tools:
+    dependencies:
+      '@orpc/openapi':
+        specifier: ^1.14.3
+        version: 1.14.3(fastify@5.8.5)
+      '@orpc/zod':
+        specifier: ^1.14.3
+        version: 1.14.3(@orpc/contract@1.14.3)(@orpc/server@1.14.3(fastify@5.8.5))(fastify@5.8.5)(zod@4.4.3)
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
 
 packages:
 
@@ -531,6 +573,19 @@ packages:
     peerDependencies:
       vite: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
 
+  '@nanostores/persistent@1.3.4':
+    resolution: {integrity: sha512-fZ42MOredSkqt450XrPxmQ94pSRPTas/rBUVCvEEMCR+rIp8bdo/xoaFFcG2cwpqAzA164PdD6p3D+MXLJYumw==}
+    engines: {node: ^20.0.0 || >=22.0.0}
+    peerDependencies:
+      nanostores: ^0.9.0 || ^0.10.0 || ^0.11.0 || ^1.0.0
+
+  '@nanostores/react@1.1.0':
+    resolution: {integrity: sha512-MbH35fjhcf7LAubYX5vhOChYUfTLzNLqH/mBGLVsHkcvjy0F8crO1WQwdmQ2xKbAmtpalDa2zBt3Hlg5kqr8iw==}
+    engines: {node: ^20.0.0 || >=22.0.0}
+    peerDependencies:
+      nanostores: ^1.2.0
+      react: '>=18.0.0'
+
   '@napi-rs/wasm-runtime@1.1.4':
     resolution: {integrity: sha512-3NQNNgA1YSlJb/kMH1ildASP9HW7/7kYnRI2szWJaofaS1hWmbGI4H+d3+22aGzXXN9IJ+n+GiFVcGipJP18ow==}
     peerDependencies:
@@ -545,6 +600,15 @@ packages:
 
   '@orpc/interop@1.14.3':
     resolution: {integrity: sha512-B8ANHAGVI8Mjw7Co0p+qBlkFG84i38WTKjR01HMkMXd6g9bHbgaqOfHcMpJMFaZzqvxBnXH4zPra2w6J8sQmhQ==}
+
+  '@orpc/json-schema@1.14.3':
+    resolution: {integrity: sha512-Qcz2PzyZG2etpfB8ywy4Upf4SaI2x6x4fA8utVQXf5GcTPWfbTVz78MDDWnNtYEXSPj1BS95HqHC0AeGvYIB+g==}
+
+  '@orpc/openapi-client@1.14.3':
+    resolution: {integrity: sha512-1vp+hi858XDrCwYdhONl15YKNlHtj5F5gI3dq/McRRZ45tZ9/Ma03hxzABOOcayaT1L9nX7gPxhX7l5EuRf2zw==}
+
+  '@orpc/openapi@1.14.3':
+    resolution: {integrity: sha512-0tZN91VoT6MEkOfw+ERKyozsnDXzmDSsBeMgEHN3Hl1WVU97T9l4aZzLlZILSNl3fat3HmduEDy/boNGmAWJkQ==}
 
   '@orpc/server@1.14.3':
     resolution: {integrity: sha512-VQG1sgruPhWdzT/ChltJ5Ju9v1A8F+s8EQ1MMSI33z0AthZ3IuuMZdqMIOo5YSuHROoFxzMJgCShOWYR9qXhQA==}
@@ -587,6 +651,13 @@ packages:
 
   '@orpc/standard-server@1.14.3':
     resolution: {integrity: sha512-qO6xJy+S15Wx0elQeVojo3p5EgBLJDTEtElPcUF9o4ac8hrikYZJBeSg7qGgu/elCIrVbaFk/16Lu8P4qatPWg==}
+
+  '@orpc/zod@1.14.3':
+    resolution: {integrity: sha512-+SIDmqfkTLCeeZVN6Cic4aWeiBqf2O9F4Vto9npqOEXT1szIpHKJtCmdZBsTOSD46LV5Tcg1emOde9eUeY2EBg==}
+    peerDependencies:
+      '@orpc/contract': 1.14.3
+      '@orpc/server': 1.14.3
+      zod: '>=3.25.0'
 
   '@oxc-project/types@0.128.0':
     resolution: {integrity: sha512-huv1Y/LzBJkBVHt3OlC7u0zHBW9qXf1FdD7sGmc1rXc2P1mTwHssYv7jyGx5KAACSCH+9B3Bhn6Z9luHRvf7pQ==}
@@ -1291,6 +1362,10 @@ packages:
   escape-html@1.0.3:
     resolution: {integrity: sha512-NiSupZ4OeuGwr68lGIeym/ksIZMJodUGOSCZ/FSnTxcrekbvqrgdUxlJOMpijaKZVjAJrWrGs/6Jy8OMuyj9ow==}
 
+  escape-string-regexp@5.0.0:
+    resolution: {integrity: sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==}
+    engines: {node: '>=12'}
+
   esm-env@1.2.2:
     resolution: {integrity: sha512-Epxrv+Nr/CaL4ZcFGPJIYLWFom+YeV1DqMLHJoEd9SYRxNbaFruBwfEX/kkHUJf55j2+TUbmDcmuilbP1TmXHA==}
 
@@ -1483,6 +1558,9 @@ packages:
   json-schema-traverse@1.0.0:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
 
+  json-schema-typed@8.0.2:
+    resolution: {integrity: sha512-fQhoXdcvc3V28x7C7BMs4P5+kNlgUURe2jmUT1T//oBRMDrqy1QPelJimwZGo7Hg9VPV3EQV5Bnq4hbFy2vetA==}
+
   kleur@4.1.5:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
@@ -1611,6 +1689,10 @@ packages:
     resolution: {integrity: sha512-ZB9RH/39qpq5Vu6Y+NmUaFhQR6pp+M2Xt76XBnEwDaGcVAqhlvxrl3B2bKS5D3NH3QR76v3aSrKaF/Kiy7lEtQ==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
+
+  nanostores@1.3.0:
+    resolution: {integrity: sha512-XPUa/jz+P1oJvN9VBxw4L9MtdFfaH3DAryqPssqhb2kXjmb9npz0dly6rCsgFWOPr4Yg9mTfM3MDZgZZ+7A3lA==}
+    engines: {node: ^20.0.0 || >=22.0.0}
 
   negotiator@1.0.0:
     resolution: {integrity: sha512-8Ofs/AUQh8MaEcrlq5xOX0CQ9ypTF5dl78mjlMNfOK08fzpgTHQRQPBxcPlEtIw0yRpws+Zo/3r+5WRby7u3Gg==}
@@ -1775,6 +1857,9 @@ packages:
     resolution: {integrity: sha512-pAQK9HalE84QSm4Po3EmWIZPd3FnjkShVkiMlz1iligWYkWQ7wHYd1PF/T7QZ5TVSD6uSTon5gBVMSM4JfBV+A==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
+
+  rou3@0.7.12:
+    resolution: {integrity: sha512-iFE4hLDuloSWcD7mjdCDhx2bKcIsYbtOTpfH5MHHLSKMOUyjqQXTeZVa289uuwEGEKFoE/BAPbhaU4B774nceg==}
 
   router@2.2.0:
     resolution: {integrity: sha512-nLTrUKm2UyiL7rlhapu/Zl45FwNgkZGaCpZbIHajDYgwlJCOzLSk+cIPAnsEqV955GjILJnKbdQC1nVPz+gAYQ==}
@@ -2054,6 +2139,9 @@ packages:
   which@1.3.1:
     resolution: {integrity: sha512-HxJdYWq1MTIQbJ3nw0cqssHoTNU267KlrDuGZ1WYlxDStUtKUhOaJmh112/TZmHxxUfuJqPXSOm7tDyas0OSIQ==}
     hasBin: true
+
+  wildcard-match@5.1.4:
+    resolution: {integrity: sha512-wldeCaczs8XXq7hj+5d/F38JE2r7EXgb6WQDM84RVwxy81T/sxB5e9+uZLK9Q9oNz1mlvjut+QtvgaOQFPVq/g==}
 
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
@@ -2335,6 +2423,15 @@ snapshots:
       - utf-8-validate
       - vue-tsc
 
+  '@nanostores/persistent@1.3.4(nanostores@1.3.0)':
+    dependencies:
+      nanostores: 1.3.0
+
+  '@nanostores/react@1.1.0(nanostores@1.3.0)(react@19.2.6)':
+    dependencies:
+      nanostores: 1.3.0
+      react: 19.2.6
+
   '@napi-rs/wasm-runtime@1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
       '@emnapi/core': 1.10.0
@@ -2361,6 +2458,46 @@ snapshots:
       - '@opentelemetry/api'
 
   '@orpc/interop@1.14.3': {}
+
+  '@orpc/json-schema@1.14.3(fastify@5.8.5)':
+    dependencies:
+      '@orpc/contract': 1.14.3
+      '@orpc/interop': 1.14.3
+      '@orpc/openapi': 1.14.3(fastify@5.8.5)
+      '@orpc/server': 1.14.3(fastify@5.8.5)(ws@8.18.0)
+      '@orpc/shared': 1.14.3
+      json-schema-typed: 8.0.2
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+      - crossws
+      - fastify
+      - ws
+
+  '@orpc/openapi-client@1.14.3':
+    dependencies:
+      '@orpc/client': 1.14.3
+      '@orpc/contract': 1.14.3
+      '@orpc/shared': 1.14.3
+      '@orpc/standard-server': 1.14.3
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+
+  '@orpc/openapi@1.14.3(fastify@5.8.5)':
+    dependencies:
+      '@orpc/client': 1.14.3
+      '@orpc/contract': 1.14.3
+      '@orpc/interop': 1.14.3
+      '@orpc/openapi-client': 1.14.3
+      '@orpc/server': 1.14.3(fastify@5.8.5)(ws@8.18.0)
+      '@orpc/shared': 1.14.3
+      '@orpc/standard-server': 1.14.3
+      json-schema-typed: 8.0.2
+      rou3: 0.7.12
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+      - crossws
+      - fastify
+      - ws
 
   '@orpc/server@1.14.3(fastify@5.8.5)(ws@8.18.0)':
     dependencies:
@@ -2432,6 +2569,22 @@ snapshots:
       '@orpc/shared': 1.14.3
     transitivePeerDependencies:
       - '@opentelemetry/api'
+
+  '@orpc/zod@1.14.3(@orpc/contract@1.14.3)(@orpc/server@1.14.3(fastify@5.8.5))(fastify@5.8.5)(zod@4.4.3)':
+    dependencies:
+      '@orpc/contract': 1.14.3
+      '@orpc/json-schema': 1.14.3(fastify@5.8.5)
+      '@orpc/openapi': 1.14.3(fastify@5.8.5)
+      '@orpc/server': 1.14.3(fastify@5.8.5)(ws@8.18.0)
+      '@orpc/shared': 1.14.3
+      escape-string-regexp: 5.0.0
+      wildcard-match: 5.1.4
+      zod: 4.4.3
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+      - crossws
+      - fastify
+      - ws
 
   '@oxc-project/types@0.128.0': {}
 
@@ -3032,6 +3185,8 @@ snapshots:
 
   escape-html@1.0.3: {}
 
+  escape-string-regexp@5.0.0: {}
+
   esm-env@1.2.2: {}
 
   esrap@2.2.6:
@@ -3266,6 +3421,8 @@ snapshots:
 
   json-schema-traverse@1.0.0: {}
 
+  json-schema-typed@8.0.2: {}
+
   kleur@4.1.5: {}
 
   light-my-request@6.6.0:
@@ -3354,6 +3511,8 @@ snapshots:
   muggle-string@0.4.1: {}
 
   nanoid@3.3.12: {}
+
+  nanostores@1.3.0: {}
 
   negotiator@1.0.0: {}
 
@@ -3555,6 +3714,8 @@ snapshots:
       '@rollup/rollup-win32-x64-gnu': 4.60.3
       '@rollup/rollup-win32-x64-msvc': 4.60.3
       fsevents: 2.3.3
+
+  rou3@0.7.12: {}
 
   router@2.2.0:
     dependencies:
@@ -3813,6 +3974,8 @@ snapshots:
   which@1.3.1:
     dependencies:
       isexe: 2.0.0
+
+  wildcard-match@5.1.4: {}
 
   wrappy@1.0.2: {}
 

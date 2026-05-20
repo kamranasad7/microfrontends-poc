@@ -15,7 +15,8 @@
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
 		"paths": {
-			"auth/*": ["./@mf-types/auth/*"]
+			"auth/*": ["./@mf-types/auth/*"],
+			"settings/*": ["./@mf-types/settings/*"]
 		}
 	},
 	"include": ["src", "vite.config.ts"]

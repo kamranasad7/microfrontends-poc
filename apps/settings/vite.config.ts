@@ -14,7 +14,8 @@ export default defineConfig({
 			name: NAME,
 			filename: 'remoteEntry.js',
 			exposes: {
-				'./App': './src/App.tsx'
+				'./App': './src/App.tsx',
+				'./SettingsStore': './src/SettingsStore.ts'
 			},
 			// settings consumes auth/Service (auth state) and header/Service
 			// (push notifications on save) — see README "Known limitations"

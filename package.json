@@ -9,6 +9,7 @@
 		"build": "pnpm -r run build",
 		"build:host": "pnpm --filter host build",
 		"check": "pnpm --filter host check",
+		"generate:openapi": "pnpm --filter \"./services/*\" run generate:openapi",
 		"preview:host": "pnpm --filter host preview",
 		"clean": "pnpm -r exec rm -rf node_modules .svelte-kit @mf-types dist build .mf && rm -rf node_modules apps/host/@mf-types"
 	},

@@ -1,10 +1,16 @@
+import { fileURLToPath } from 'node:url';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { RPCHandler } from '@orpc/server/fastify';
 import { router } from './router';
 import { allowedOrigins } from '../../../tools/service-env';
+import { writeOpenApiSpec } from '../../../tools/openapi-gen';
 
 const PORT = 4002;
+const SERVICE_DIR = fileURLToPath(new URL('..', import.meta.url));
+
+// Keep services/quizzes/openapi.json in sync with the router on every dev restart.
+await writeOpenApiSpec(router, { name: 'quizzes', port: PORT, serviceDir: SERVICE_DIR });
 const app = Fastify({ logger: false });
 
 await app.register(cors, {

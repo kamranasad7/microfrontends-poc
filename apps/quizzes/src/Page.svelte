@@ -91,13 +91,14 @@
 	section {
 		padding: 24px;
 		font-family: system-ui, sans-serif;
+		color: var(--text-primary);
 	}
 	h1 {
 		margin: 0;
 		color: #2563eb;
 	}
 	p {
-		color: #475569;
+		color: var(--text-muted);
 	}
 	a {
 		color: #2563eb;
@@ -110,8 +111,8 @@
 		gap: 16px;
 	}
 	article {
-		background: white;
-		border: 1px solid #e2e8f0;
+		background: var(--bg-card);
+		border: 1px solid var(--border);
 		border-radius: 10px;
 		padding: 16px;
 		box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
@@ -132,30 +133,30 @@
 	h3 {
 		margin: 0;
 		font-size: 16px;
-		color: #0f172a;
+		color: var(--text-primary);
 	}
 	.topic {
 		margin-top: 4px;
 		font-size: 13px;
-		color: #64748b;
+		color: var(--text-muted);
 	}
 	.meta {
 		margin-top: 12px;
 		display: flex;
 		gap: 12px;
 		font-size: 12px;
-		color: #475569;
+		color: var(--text-muted);
 	}
 	.dot {
-		color: #cbd5e1;
+		color: var(--border-strong);
 	}
 	.empty {
 		margin-top: 24px;
 		padding: 24px;
-		background: white;
-		border: 1px solid #e2e8f0;
+		background: var(--bg-card);
+		border: 1px solid var(--border);
 		border-radius: 10px;
-		color: #64748b;
+		color: var(--text-muted);
 		text-align: center;
 	}
 	.empty.error {

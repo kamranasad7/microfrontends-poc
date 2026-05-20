@@ -1,12 +1,12 @@
 import { createRoot, type Root } from 'react-dom/client';
 import { StrictMode } from 'react';
 import Settings from './Settings';
+import type { SettingsState } from './SettingsStore';
 
-export interface SettingsData {
-	theme: 'light' | 'dark';
-	language: 'en' | 'es' | 'fr';
-	notifications: boolean;
-}
+// SettingsData is the snapshot shape the host receives in the optional onSave
+// callback. It mirrors the federated settings-store's state — kept as a named
+// alias here so existing host code keeps compiling.
+export type SettingsData = SettingsState;
 
 export interface SettingsProps {
 	onSave?: (data: SettingsData) => void;

@@ -1,10 +1,16 @@
+import { fileURLToPath } from 'node:url';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
 import { RPCHandler } from '@orpc/server/node';
 import { router } from './router';
 import { allowedOrigins } from '../../../tools/service-env';
+import { writeOpenApiSpec } from '../../../tools/openapi-gen';
 
 const PORT = 4003;
+const SERVICE_DIR = fileURLToPath(new URL('..', import.meta.url));
+
+// Keep services/students/openapi.json in sync with the router on every dev restart.
+await writeOpenApiSpec(router, { name: 'students', port: PORT, serviceDir: SERVICE_DIR });
 const app = express();
 
 app.use(

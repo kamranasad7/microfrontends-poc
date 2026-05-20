@@ -3,15 +3,17 @@
 	import type { HeaderProps } from './App';
 	import * as Auth from 'auth/Service';
 	import * as Notifications from './Service';
+	import { settings, LANGUAGE_LABELS } from 'settings/SettingsStore';
 
 	let { appName, accentColor = '#0f172a' }: HeaderProps = $props();
 
 	let menuOpen = $state(false);
 	let notifOpen = $state(false);
 
-	// Drive the visible user from auth/Service so cross-framework callers
-	// (settings calling Auth.logout(), Vue auth screen calling Auth.login())
-	// flip the header instantly.
+	// auth + notifications stores still use the hand-rolled pub/sub pattern;
+	// settings is on Nanostores. Atoms implement Svelte's store contract, so
+	// `$settings` below auto-subscribes and re-renders the header whenever
+	// the React settings panel mutates it.
 	let authState = $state(Auth.getAuthState());
 	let notifs = $state(Notifications.getNotifications());
 
@@ -54,6 +56,9 @@
 		<span class="tag">rendered by header MFE (Svelte)</span>
 	</div>
 	<div class="right">
+		<span class="lang" title={LANGUAGE_LABELS[$settings.language]}>
+			{$settings.language.toUpperCase()}
+		</span>
 		{#if authState.isAuthenticated && authState.user}
 			<button class="bell" aria-label="Notifications" onclick={toggleNotif}>
 				🔔
@@ -130,6 +135,15 @@
 		background: transparent;
 		border: 0;
 		cursor: pointer;
+	}
+	.lang {
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		padding: 4px 9px;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.12);
+		color: white;
 	}
 	.bell {
 		position: relative;

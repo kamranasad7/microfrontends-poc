@@ -47,9 +47,36 @@
 </div>
 
 <style>
+	/* Theme tokens. The settings-store sets `<html data-theme="dark">` on the
+	 * document root; the dark block below overrides the defaults. Every MFE's
+	 * scoped CSS uses these var()s, so the flip cascades into all federated
+	 * remotes automatically — no per-MFE JS subscription needed for theming. */
+	:global(:root) {
+		--bg-page: #f8fafc;
+		--bg-card: #ffffff;
+		--bg-muted: #f1f5f9;
+		--text-primary: #0f172a;
+		--text-muted: #64748b;
+		--border: #e2e8f0;
+		--border-strong: #cbd5e1;
+		color-scheme: light;
+	}
+	:global([data-theme='dark']) {
+		--bg-page: #0f172a;
+		--bg-card: #1e293b;
+		--bg-muted: #0b1220;
+		--text-primary: #f1f5f9;
+		--text-muted: #94a3b8;
+		--border: #334155;
+		--border-strong: #475569;
+		color-scheme: dark;
+	}
 	:global(html, body) {
 		margin: 0;
 		padding: 0;
+		background: var(--bg-page);
+		color: var(--text-primary);
+		transition: background-color 120ms ease, color 120ms ease;
 	}
 	:global(*) {
 		box-sizing: border-box;
@@ -97,6 +124,7 @@
 	main {
 		flex: 1;
 		overflow-y: auto;
-		background: #f8fafc;
+		background: var(--bg-page);
+		color: var(--text-primary);
 	}
 </style>

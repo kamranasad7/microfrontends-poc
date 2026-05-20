@@ -17,13 +17,19 @@ export default defineConfig({
 				'./App': './src/App.ts',
 				'./Service': './src/Service.ts'
 			},
-			// header consumes auth/Service for the Sign-in / Log-out buttons.
+			// header consumes auth/Service (for the Sign-in / Log-out buttons) and
+			// settings/SettingsStore (for the language badge + theme awareness).
 			// Nested-remote — same hover-preload trade-off as settings/auth.
 			remotes: {
 				auth: {
 					type: 'module',
 					name: 'auth',
 					entry: `${mfeUrl('auth', 3005)}/mf-manifest.json`
+				},
+				settings: {
+					type: 'module',
+					name: 'settings',
+					entry: `${mfeUrl('settings', 3004)}/mf-manifest.json`
 				}
 			},
 			// TEMP: shared svelte singleton crashes in production bundles
